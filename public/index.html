@@ -8,239 +8,318 @@
       :root {
         color-scheme: dark;
         font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-        background: #06100e;
-        color: #eefbf7;
-        --panel: rgba(8, 20, 18, 0.78);
-        --panel-soft: rgba(255, 255, 255, 0.045);
-        --line: rgba(119, 255, 211, 0.16);
-        --muted: #9db8b0;
-        --green: #5eead4;
+        --bg: #040404;
+        --bg-2: #07120d;
+        --panel: rgba(11, 23, 16, 0.76);
+        --panel-2: rgba(20, 37, 27, 0.62);
+        --line: rgba(124, 255, 179, 0.16);
+        --line-strong: rgba(10, 253, 103, 0.38);
+        --text: #effff4;
+        --muted: #b6d1c4;
+        --muted-2: #70a384;
+        --green: #0afd67;
+        --green-2: #3a9755;
         --yellow: #fbbf24;
-        --red: #f87171;
+        --red: #fb7185;
         --blue: #7dd3fc;
-        --purple: #c084fc;
+        --shadow: 0 30px 120px rgba(0, 0, 0, 0.45);
       }
 
-      * { box-sizing: border-box; }
+      * {
+        box-sizing: border-box;
+      }
+
+      html {
+        scroll-behavior: smooth;
+      }
 
       body {
         margin: 0;
         min-height: 100vh;
-        padding: 28px;
+        color: var(--text);
         background:
-          radial-gradient(circle at 12% 0%, rgba(94, 234, 212, 0.20), transparent 28rem),
-          radial-gradient(circle at 100% 10%, rgba(125, 211, 252, 0.12), transparent 30rem),
-          linear-gradient(135deg, #06100e, #0a141c 58%, #0b1015);
+          radial-gradient(circle at 72% 12%, rgba(10, 253, 103, 0.20), transparent 26rem),
+          radial-gradient(circle at 0% 0%, rgba(43, 88, 60, 0.42), transparent 30rem),
+          linear-gradient(145deg, #040404 0%, #07120d 52%, #040404 100%);
+      }
+
+      body::before {
+        content: "";
+        position: fixed;
+        inset: 0;
+        pointer-events: none;
+        background-image:
+          linear-gradient(rgba(255, 255, 255, 0.025) 1px, transparent 1px),
+          linear-gradient(90deg, rgba(255, 255, 255, 0.025) 1px, transparent 1px);
+        background-size: 72px 72px;
+        mask-image: linear-gradient(to bottom, black, transparent 82%);
       }
 
       main {
-        max-width: 1280px;
+        width: min(1180px, calc(100% - 36px));
         margin: 0 auto;
       }
 
-      header {
+      nav {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 16px;
+        padding: 24px 0;
+      }
+
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        font-weight: 950;
+        letter-spacing: -0.04em;
+      }
+
+      .brand-mark {
+        width: 38px;
+        height: 38px;
         display: grid;
-        grid-template-columns: 1.35fr 0.65fr;
-        gap: 18px;
-        align-items: stretch;
+        place-items: center;
+        border-radius: 14px;
+        color: #031507;
+        background: linear-gradient(135deg, var(--green), #b6ffd1);
+        box-shadow: 0 0 40px rgba(10, 253, 103, 0.38);
       }
 
-      .panel {
-        border: 1px solid var(--line);
-        background: var(--panel);
-        border-radius: 28px;
-        padding: 24px;
-        box-shadow: 0 24px 80px rgba(0, 0, 0, 0.32);
-        position: relative;
-        overflow: hidden;
-      }
-
-      .panel::before {
-        content: "";
-        position: absolute;
-        inset: 0;
-        pointer-events: none;
-        background: linear-gradient(135deg, rgba(255, 255, 255, 0.08), transparent 24%, transparent 72%, rgba(94, 234, 212, 0.05));
-        opacity: 0.8;
-      }
-
-      .eyebrow {
-        display: inline-flex;
+      .nav-links {
+        display: flex;
         gap: 8px;
         align-items: center;
-        color: var(--blue);
+        border: 1px solid var(--line);
+        background: rgba(255, 255, 255, 0.04);
+        padding: 6px;
+        border-radius: 999px;
+      }
+
+      .nav-links a {
+        color: var(--muted);
+        text-decoration: none;
         font-size: 13px;
         font-weight: 800;
+        padding: 9px 12px;
+        border-radius: 999px;
+      }
+
+      .nav-links a:hover {
+        color: var(--text);
+        background: rgba(255, 255, 255, 0.06);
+      }
+
+      .nav-cta {
+        color: #061007;
+        background: var(--green);
+        box-shadow: 0 0 30px rgba(10, 253, 103, 0.24);
+      }
+
+      .hero {
+        display: grid;
+        grid-template-columns: 0.94fr 1.06fr;
+        gap: 30px;
+        align-items: center;
+        padding: 42px 0 28px;
+      }
+
+      .kicker {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        color: #d9ffe7;
+        background: rgba(10, 253, 103, 0.08);
+        border: 1px solid var(--line-strong);
+        padding: 9px 13px;
+        border-radius: 999px;
+        font-size: 12px;
+        font-weight: 900;
         letter-spacing: 0.08em;
         text-transform: uppercase;
       }
 
+      .pulse {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: var(--green);
+        box-shadow: 0 0 0 8px rgba(10, 253, 103, 0.12), 0 0 26px rgba(10, 253, 103, 0.8);
+      }
+
       h1 {
-        margin: 10px 0 12px;
-        font-size: clamp(38px, 7vw, 76px);
+        margin: 22px 0 18px;
+        font-size: clamp(44px, 7vw, 84px);
         line-height: 0.9;
-        letter-spacing: -0.07em;
-        text-wrap: balance;
+        letter-spacing: -0.08em;
       }
 
-      h2 {
-        margin: 30px 0 14px;
-        font-size: 22px;
-        letter-spacing: -0.03em;
+      .gradient {
+        color: transparent;
+        background: linear-gradient(90deg, #ffffff, #b6d1c4 38%, var(--green));
+        -webkit-background-clip: text;
+        background-clip: text;
       }
 
-      h3 {
-        margin: 0 0 10px;
-      }
-
-      p {
+      .hero-copy {
         color: var(--muted);
-        line-height: 1.6;
-      }
-
-      .subtitle {
-        max-width: 850px;
         font-size: 18px;
+        line-height: 1.65;
+        max-width: 660px;
       }
 
-      .hero-grid {
-        display: grid;
-        grid-template-columns: repeat(3, 1fr);
+      .hero-actions {
+        display: flex;
+        flex-wrap: wrap;
         gap: 12px;
-        margin-top: 22px;
+        margin: 28px 0;
+      }
+
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        min-height: 48px;
+        border: 1px solid transparent;
+        border-radius: 999px;
+        padding: 13px 18px;
+        font-weight: 950;
+        text-decoration: none;
+        cursor: pointer;
+      }
+
+      .btn-primary {
+        color: #041107;
+        background: var(--green);
+        box-shadow: 0 18px 50px rgba(10, 253, 103, 0.24);
+      }
+
+      .btn-secondary {
+        color: var(--text);
+        border-color: var(--line);
+        background: rgba(255, 255, 255, 0.05);
       }
 
       .badges {
         display: flex;
         flex-wrap: wrap;
         gap: 8px;
-        margin-top: 18px;
       }
 
       .badge {
-        border: 1px solid rgba(119, 255, 211, 0.18);
-        background: rgba(94, 234, 212, 0.07);
-        color: #d8fff6;
+        border: 1px solid var(--line);
+        color: var(--muted);
+        background: rgba(255, 255, 255, 0.04);
         border-radius: 999px;
         padding: 8px 11px;
         font-size: 12px;
-        font-weight: 800;
+        font-weight: 850;
       }
 
-      .stat, .scenario, .timeline-item, .policy-box {
+      .terminal-shell {
+        position: relative;
         border: 1px solid var(--line);
-        background: var(--panel-soft);
-        border-radius: 20px;
-        padding: 16px;
-      }
-
-      .stat strong {
-        display: block;
-        font-size: 32px;
-        line-height: 1;
-      }
-
-      .stat.feature {
+        border-radius: 34px;
+        padding: 18px;
         background:
-          linear-gradient(135deg, rgba(94, 234, 212, 0.12), rgba(125, 211, 252, 0.04)),
-          rgba(255, 255, 255, 0.045);
+          radial-gradient(circle at top right, rgba(10, 253, 103, 0.22), transparent 16rem),
+          linear-gradient(145deg, rgba(11, 23, 16, 0.92), rgba(4, 4, 4, 0.72));
+        box-shadow: var(--shadow);
       }
 
-      .stat span, .small {
-        color: var(--muted);
+      .terminal-shell::before {
+        content: "";
+        position: absolute;
+        inset: -1px;
+        z-index: -1;
+        border-radius: 35px;
+        background: linear-gradient(135deg, rgba(10, 253, 103, 0.72), transparent 40%, rgba(112, 163, 132, 0.2));
+        filter: blur(20px);
+        opacity: 0.38;
+      }
+
+      .terminal-top {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+        padding: 6px 8px 16px;
+      }
+
+      .traffic {
+        display: flex;
+        gap: 7px;
+      }
+
+      .traffic span {
+        width: 11px;
+        height: 11px;
+        border-radius: 50%;
+        background: #3b463e;
+      }
+
+      .traffic span:nth-child(1) { background: var(--red); }
+      .traffic span:nth-child(2) { background: var(--yellow); }
+      .traffic span:nth-child(3) { background: var(--green); }
+
+      .status-pill {
+        border: 1px solid rgba(10, 253, 103, 0.28);
+        background: rgba(10, 253, 103, 0.08);
+        color: #d9ffe7;
+        border-radius: 999px;
+        padding: 7px 10px;
+        font-size: 12px;
+        font-weight: 900;
+      }
+
+      .chart-card {
+        border: 1px solid var(--line);
+        border-radius: 26px;
+        padding: 18px;
+        background: rgba(0, 0, 0, 0.30);
+      }
+
+      .chart-head {
+        display: flex;
+        justify-content: space-between;
+        gap: 16px;
+        align-items: start;
+      }
+
+      .chart-head strong {
+        display: block;
+        font-size: 28px;
+        letter-spacing: -0.04em;
+      }
+
+      .chart-head span,
+      .small {
+        color: var(--muted-2);
         font-size: 13px;
       }
 
-      .architecture {
-        display: grid;
-        gap: 10px;
-        align-content: center;
-      }
-
-      .radar {
-        min-height: 126px;
-        border-radius: 22px;
-        border: 1px solid rgba(94, 234, 212, 0.20);
-        background:
-          radial-gradient(circle at center, rgba(94, 234, 212, 0.25), transparent 3px),
-          repeating-radial-gradient(circle at center, rgba(94, 234, 212, 0.16) 0 1px, transparent 1px 32px),
-          conic-gradient(from 100deg, rgba(94, 234, 212, 0.24), transparent 28%, transparent 100%);
-        box-shadow: inset 0 0 40px rgba(94, 234, 212, 0.06);
-      }
-
-      .node {
-        border: 1px solid var(--line);
-        border-radius: 16px;
-        padding: 14px;
-        background: rgba(0, 0, 0, 0.18);
-        font-weight: 800;
-      }
-
-      .arrow {
-        color: var(--muted);
-        text-align: center;
-      }
-
-      .layout {
-        display: grid;
-        grid-template-columns: 0.9fr 1.1fr;
-        gap: 18px;
-      }
-
-      textarea, pre {
+      .sparkline {
         width: 100%;
-        border-radius: 18px;
-        border: 1px solid var(--line);
-        background: rgba(0, 0, 0, 0.24);
-        color: #eefbf7;
-        padding: 14px;
-        font: inherit;
+        height: 170px;
+        margin-top: 12px;
       }
 
-      textarea {
-        min-height: 112px;
-        resize: vertical;
-      }
-
-      pre {
-        overflow: auto;
-        white-space: pre-wrap;
-        max-height: 420px;
-      }
-
-      button {
-        cursor: pointer;
-        border: 0;
-        border-radius: 999px;
-        padding: 12px 16px;
-        font-weight: 900;
-        color: #07110f;
-        background: var(--green);
-        margin: 8px 8px 8px 0;
-      }
-
-      button.secondary {
-        color: #eefbf7;
-        background: rgba(255, 255, 255, 0.08);
-        border: 1px solid var(--line);
-      }
-
-      .grid {
+      .trade-row {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+        grid-template-columns: 1fr auto;
         gap: 14px;
+        align-items: center;
+        border: 1px solid var(--line);
+        background: rgba(255, 255, 255, 0.04);
+        border-radius: 18px;
+        padding: 13px;
+        margin-top: 10px;
       }
 
-      .scenario {
-        display: grid;
-        gap: 10px;
-        min-height: 210px;
-        transition: transform 160ms ease, border-color 160ms ease;
-      }
-
-      .scenario:hover {
-        transform: translateY(-2px);
-        border-color: rgba(119, 255, 211, 0.32);
+      .trade-row strong {
+        display: block;
       }
 
       .tag {
@@ -248,74 +327,109 @@
         border-radius: 999px;
         padding: 6px 10px;
         font-size: 12px;
-        font-weight: 900;
+        font-weight: 950;
         text-transform: uppercase;
       }
 
-      .allow { background: rgba(45, 212, 191, 0.18); color: var(--green); }
-      .modify { background: rgba(251, 191, 36, 0.18); color: var(--yellow); }
-      .block { background: rgba(248, 113, 113, 0.18); color: var(--red); }
-      .baseline { border-color: rgba(94, 234, 212, 0.24); }
-      .risk-repair { border-color: rgba(251, 191, 36, 0.24); }
-      .prompt-injection, .fund-safety { border-color: rgba(248, 113, 113, 0.28); }
-      .portfolio-risk, .data-quality, .execution-quality, .allowlist, .idempotency { border-color: rgba(125, 211, 252, 0.22); }
-      .pass { color: #86efac; }
-      .fail { color: #fca5a5; }
+      .allow { background: rgba(10, 253, 103, 0.14); color: var(--green); }
+      .modify { background: rgba(251, 191, 36, 0.14); color: var(--yellow); }
+      .block { background: rgba(251, 113, 133, 0.14); color: var(--red); }
 
-      code {
-        color: var(--blue);
-        overflow-wrap: anywhere;
+      .section {
+        padding: 48px 0 0;
       }
 
-      .timeline {
-        display: grid;
-        gap: 10px;
-      }
-
-      .spotlight {
-        border: 1px solid rgba(119, 255, 211, 0.2);
-        background:
-          radial-gradient(circle at top right, rgba(125, 211, 252, 0.12), transparent 14rem),
-          rgba(255, 255, 255, 0.045);
-        border-radius: 24px;
-        padding: 18px;
-        margin-bottom: 14px;
-      }
-
-      .spotlight-verdict {
+      .section-head {
         display: flex;
-        align-items: center;
         justify-content: space-between;
-        gap: 10px;
+        gap: 18px;
+        align-items: end;
+        margin-bottom: 16px;
       }
 
-      .spotlight strong {
-        display: block;
-        font-size: 30px;
-        letter-spacing: -0.04em;
-        margin-top: 10px;
+      h2 {
+        margin: 0;
+        font-size: clamp(28px, 4vw, 46px);
+        line-height: 1;
+        letter-spacing: -0.06em;
       }
 
-      .receipt-line {
-        border-top: 1px solid var(--line);
-        margin-top: 14px;
-        padding-top: 12px;
+      .section-head p {
+        margin: 0;
+        color: var(--muted);
+        max-width: 560px;
+        line-height: 1.55;
       }
 
-      .timeline-item {
+      .stats {
         display: grid;
-        grid-template-columns: auto 1fr;
+        grid-template-columns: repeat(6, 1fr);
         gap: 12px;
-        align-items: start;
       }
 
-      .dot {
-        width: 14px;
-        height: 14px;
-        border-radius: 999px;
-        background: var(--green);
-        margin-top: 4px;
-        box-shadow: 0 0 24px rgba(94, 234, 212, 0.8);
+      .stat,
+      .panel,
+      .scenario,
+      .timeline-item,
+      .policy-box {
+        border: 1px solid var(--line);
+        background: var(--panel);
+        border-radius: 24px;
+        padding: 17px;
+        box-shadow: 0 16px 70px rgba(0, 0, 0, 0.24);
+      }
+
+      .stat strong {
+        display: block;
+        font-size: 32px;
+        letter-spacing: -0.05em;
+      }
+
+      .stat.feature {
+        border-color: var(--line-strong);
+        background:
+          radial-gradient(circle at top right, rgba(10, 253, 103, 0.18), transparent 10rem),
+          var(--panel);
+      }
+
+      .guard-grid {
+        display: grid;
+        grid-template-columns: 0.95fr 1.05fr;
+        gap: 16px;
+      }
+
+      textarea,
+      pre {
+        width: 100%;
+        border-radius: 18px;
+        border: 1px solid var(--line);
+        background: rgba(0, 0, 0, 0.28);
+        color: var(--text);
+        padding: 14px;
+        font: inherit;
+      }
+
+      textarea {
+        min-height: 116px;
+        resize: vertical;
+      }
+
+      pre {
+        overflow: auto;
+        white-space: pre-wrap;
+        max-height: 360px;
+      }
+
+      button {
+        border: 0;
+        margin: 8px 8px 8px 0;
+      }
+
+      .button-bar {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin: 10px 0;
       }
 
       .split {
@@ -324,12 +438,112 @@
         gap: 12px;
       }
 
-      @media (max-width: 900px) {
-        header, .layout, .split {
+      .spotlight {
+        border: 1px solid var(--line-strong);
+        background:
+          radial-gradient(circle at top right, rgba(10, 253, 103, 0.16), transparent 14rem),
+          rgba(7, 18, 13, 0.82);
+        border-radius: 26px;
+        padding: 18px;
+        margin-bottom: 14px;
+      }
+
+      .spotlight-top {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+      }
+
+      .spotlight strong {
+        display: block;
+        margin-top: 12px;
+        font-size: 34px;
+        letter-spacing: -0.05em;
+      }
+
+      .receipt-line {
+        border-top: 1px solid var(--line);
+        margin-top: 14px;
+        padding-top: 12px;
+      }
+
+      .timeline {
+        display: grid;
+        gap: 10px;
+      }
+
+      .timeline-item {
+        display: grid;
+        grid-template-columns: auto 1fr;
+        gap: 12px;
+      }
+
+      .dot {
+        width: 14px;
+        height: 14px;
+        border-radius: 50%;
+        background: var(--green);
+        margin-top: 5px;
+        box-shadow: 0 0 24px rgba(10, 253, 103, 0.72);
+      }
+
+      .scenario-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 14px;
+      }
+
+      .scenario {
+        display: grid;
+        gap: 10px;
+        min-height: 220px;
+        transition: transform 150ms ease, border-color 150ms ease;
+      }
+
+      .scenario:hover {
+        transform: translateY(-3px);
+        border-color: var(--line-strong);
+      }
+
+      .baseline { border-color: rgba(10, 253, 103, 0.25); }
+      .risk-repair { border-color: rgba(251, 191, 36, 0.28); }
+      .prompt-injection, .fund-safety { border-color: rgba(251, 113, 133, 0.34); }
+      .portfolio-risk, .data-quality, .execution-quality, .allowlist, .idempotency, .malformed-intent, .mandate-drift {
+        border-color: rgba(112, 163, 132, 0.28);
+      }
+
+      code {
+        color: var(--green);
+        overflow-wrap: anywhere;
+      }
+
+      @media (max-width: 980px) {
+        .hero,
+        .guard-grid,
+        .split {
           grid-template-columns: 1fr;
         }
 
-        .hero-grid {
+        .stats {
+          grid-template-columns: repeat(2, 1fr);
+        }
+
+        .nav-links {
+          display: none;
+        }
+      }
+
+      @media (max-width: 560px) {
+        body {
+          padding: 18px;
+        }
+
+        main {
+          width: 100%;
+        }
+
+        .stats {
           grid-template-columns: 1fr;
         }
       }
@@ -337,85 +551,152 @@
   </head>
   <body>
     <main>
-      <header>
-        <section class="panel">
-          <div class="eyebrow">Bitget AI Base Camp S1 / Track 2</div>
-          <h1>Sentinel Flight Recorder</h1>
-          <p class="subtitle">
-            MCP-native execution safety for autonomous trading agents. Sentinel sits in front of Bitget Agent Hub,
-            enforces deterministic risk policy, and records every agent intent as a tamper-evident flight receipt.
+      <nav>
+        <div class="brand">
+          <span class="brand-mark">S</span>
+          <span>Sentinel Flight Recorder</span>
+        </div>
+        <div class="nav-links">
+          <a href="#guard">Live Guard</a>
+          <a href="#bench">Benchmark</a>
+          <a href="https://github.com/dmetagame/sentinel-flight-recorder">GitHub</a>
+          <a class="nav-cta" href="#guard">Run Demo</a>
+        </div>
+      </nav>
+
+      <section class="hero">
+        <div>
+          <div class="kicker"><span class="pulse"></span> Bitget AI Base Camp S1 - Track 2</div>
+          <h1><span class="gradient">Autonomous agents</span><br />need an execution firewall.</h1>
+          <p class="hero-copy">
+            Sentinel sits in front of Bitget Agent Hub, converts trading intent into audited decisions,
+            and deterministically allows, repairs, or blocks every dangerous tool call.
           </p>
+          <div class="hero-actions">
+            <a class="btn btn-primary" href="#guard">Test the Guard</a>
+            <a class="btn btn-secondary" href="#bench">View 20 Threat Cases</a>
+          </div>
           <div class="badges">
             <span class="badge">MCP Proxy</span>
             <span class="badge">Qwen Policy Compiler</span>
             <span class="badge">Deterministic Authorization</span>
-            <span class="badge">Paper-Safe Execution</span>
             <span class="badge">Merkle Receipts</span>
-          </div>
-          <div class="hero-grid" id="summary"></div>
-        </section>
-
-        <aside class="panel architecture">
-          <h3>Execution Control Plane</h3>
-          <div class="radar" aria-hidden="true"></div>
-          <div class="node">Qwen / Trading Agent</div>
-          <div class="arrow">↓ trade intent</div>
-          <div class="node">Sentinel Gate</div>
-          <div class="arrow">↓ allow / modify / block</div>
-          <div class="node">Bitget Agent Hub</div>
-          <p class="small">Qwen can compile and explain policy. Deterministic code authorizes execution.</p>
-        </aside>
-      </header>
-
-      <h2>Live Guard Demo</h2>
-      <section class="layout">
-        <div class="panel">
-          <h3>Natural-Language Risk Mandate</h3>
-          <textarea id="policyText">Trade BTC and ETH only. Risk at most 1% per position. Use maximum 5x leverage. Stop trading after losing 3% daily. Require stop loss.</textarea>
-          <div>
-            <button id="compilePolicy">Compile Policy</button>
-            <button class="secondary" data-demo="safe">Safe BTC Order</button>
-            <button class="secondary" data-demo="missingStop">Missing Stop</button>
-            <button class="secondary" data-demo="injection">Prompt Injection</button>
-            <button class="secondary" data-demo="transfer">Transfer Attempt</button>
-          </div>
-          <div class="split">
-            <div class="policy-box">
-              <strong>Compiled Policy</strong>
-              <pre id="policyResult">Click Compile Policy.</pre>
-            </div>
-            <div class="policy-box">
-              <strong>Latest Receipt</strong>
-              <pre id="receiptResult">Run a guarded tool call.</pre>
-            </div>
           </div>
         </div>
 
-        <div class="panel">
-          <h3>Agent Intent Timeline</h3>
-          <div class="spotlight" id="spotlight">
-            <div class="spotlight-verdict">
-              <span class="tag allow">ready</span>
-              <span class="small">Latest decision</span>
-            </div>
-            <strong>No tool call yet</strong>
-            <p class="small">Run a demo action to watch Sentinel allow, repair, or block a Bitget Agent Hub-style call.</p>
-            <div class="receipt-line small"><code>receipt hash pending</code></div>
+        <div class="terminal-shell">
+          <div class="terminal-top">
+            <div class="traffic"><span></span><span></span><span></span></div>
+            <div class="status-pill">20/20 Sentinel Bench</div>
           </div>
-          <div class="timeline" id="timeline">
-            <div class="timeline-item">
-              <span class="dot"></span>
+          <div class="chart-card">
+            <div class="chart-head">
               <div>
-                <strong>Ready</strong>
-                <div class="small">Choose a demo action to send a Bitget Agent Hub-style tool call through Sentinel.</div>
+                <span>Protected execution volume</span>
+                <strong>$128.4M</strong>
+              </div>
+              <span class="tag allow">paper safe</span>
+            </div>
+            <svg class="sparkline" viewBox="0 0 600 220" role="img" aria-label="Stylized trading chart">
+              <defs>
+                <linearGradient id="area" x1="0" x2="0" y1="0" y2="1">
+                  <stop offset="0%" stop-color="#0afd67" stop-opacity="0.34" />
+                  <stop offset="100%" stop-color="#0afd67" stop-opacity="0" />
+                </linearGradient>
+              </defs>
+              <path d="M0 175 C48 168 58 126 102 132 C154 138 160 90 207 98 C249 105 263 55 311 68 C359 82 372 40 418 48 C471 58 492 25 600 36 L600 220 L0 220 Z" fill="url(#area)" />
+              <path d="M0 175 C48 168 58 126 102 132 C154 138 160 90 207 98 C249 105 263 55 311 68 C359 82 372 40 418 48 C471 58 492 25 600 36" fill="none" stroke="#0afd67" stroke-width="5" stroke-linecap="round" />
+              <g stroke="rgba(182,209,196,0.14)">
+                <line x1="0" y1="60" x2="600" y2="60" />
+                <line x1="0" y1="120" x2="600" y2="120" />
+                <line x1="0" y1="180" x2="600" y2="180" />
+              </g>
+            </svg>
+            <div class="trade-row">
+              <div>
+                <strong>Prompt injection: 50x BTC long</strong>
+                <span class="small">Leverage capped, policy hash recorded</span>
+              </div>
+              <span class="tag modify">modify</span>
+            </div>
+            <div class="trade-row">
+              <div>
+                <strong>Unauthorized transfer request</strong>
+                <span class="small">Blocked before upstream tool call</span>
+              </div>
+              <span class="tag block">block</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" id="bench">
+        <div class="section-head">
+          <h2>Red-team benchmark</h2>
+          <p>Sentinel Bench attacks the execution layer with prompt injection, malformed orders, stale data, leverage drift, and fund-movement attempts.</p>
+        </div>
+        <div class="stats" id="summary"></div>
+      </section>
+
+      <section class="section" id="guard">
+        <div class="section-head">
+          <h2>Live guard demo</h2>
+          <p>Compile a natural-language risk mandate, then send Bitget Agent Hub-style tool calls through Sentinel.</p>
+        </div>
+        <div class="guard-grid">
+          <div class="panel">
+            <h3>Natural-language risk mandate</h3>
+            <textarea id="policyText">Trade BTC and ETH only. Risk at most 1% per position. Use maximum 5x leverage. Stop trading after losing 3% daily. Require stop loss.</textarea>
+            <div class="button-bar">
+              <button class="btn btn-primary" id="compilePolicy">Compile Policy</button>
+              <button class="btn btn-secondary" data-demo="safe">Safe BTC Order</button>
+              <button class="btn btn-secondary" data-demo="missingStop">Missing Stop</button>
+              <button class="btn btn-secondary" data-demo="injection">Prompt Injection</button>
+              <button class="btn btn-secondary" data-demo="transfer">Transfer Attempt</button>
+            </div>
+            <div class="split">
+              <div class="policy-box">
+                <strong>Compiled Policy</strong>
+                <pre id="policyResult">Click Compile Policy.</pre>
+              </div>
+              <div class="policy-box">
+                <strong>Latest Receipt</strong>
+                <pre id="receiptResult">Run a guarded tool call.</pre>
+              </div>
+            </div>
+          </div>
+
+          <div class="panel">
+            <div class="spotlight" id="spotlight">
+              <div class="spotlight-top">
+                <span class="tag allow">ready</span>
+                <span class="small">Latest decision</span>
+              </div>
+              <strong>No tool call yet</strong>
+              <p class="small">Run a demo action to watch Sentinel allow, repair, or block a Bitget Agent Hub-style call.</p>
+              <div class="receipt-line small"><code>receipt hash pending</code></div>
+            </div>
+            <h3>Agent intent timeline</h3>
+            <div class="timeline" id="timeline">
+              <div class="timeline-item">
+                <span class="dot"></span>
+                <div>
+                  <strong>Ready</strong>
+                  <div class="small">Choose a demo action to send an execution call through Sentinel.</div>
+                </div>
               </div>
             </div>
           </div>
         </div>
       </section>
 
-      <h2>Red-Team Benchmark</h2>
-      <section class="grid" id="scenarios"></section>
+      <section class="section">
+        <div class="section-head">
+          <h2>Threat coverage</h2>
+          <p>Every card below is generated from the live benchmark API and produces a receipt hash.</p>
+        </div>
+        <div class="scenario-grid" id="scenarios"></div>
+      </section>
     </main>
 
     <script>
@@ -519,12 +800,12 @@
           ["Threat Cases", summary.total],
           ["Blocked", summary.blocked],
           ["Repaired", summary.modified],
-          ["Merkle Root", summary.receiptMerkleRoot.slice(0, 10) + "..."],
-          ["Mode", "Paper-safe"]
+          ["Allowed", summary.allowed],
+          ["Merkle Root", summary.receiptMerkleRoot.slice(0, 10) + "..."]
         ].map(([label, value], index) => `
           <article class="stat ${index === 0 ? "feature" : ""}">
             <strong>${value}</strong>
-            <span>${label}</span>
+            <span class="small">${label}</span>
           </article>
         `).join("");
 
@@ -538,7 +819,7 @@
               <span class="tag ${item.actual}">${item.actual}</span>
               <strong>${escapeHtml(item.threat || item.scenario)}</strong>
               <div class="small">${escapeHtml(item.story || "")}</div>
-              <div class="${item.passed ? "pass" : "fail"}">
+              <div class="${item.passed ? "allow" : "block"} tag">
                 expected ${item.expected}, got ${item.actual}
               </div>
               <small>${escapeHtml(reasons || "Policy-compliant execution.")}</small>
@@ -611,7 +892,7 @@
 
       function renderSpotlight(item) {
         spotlightEl.innerHTML = `
-          <div class="spotlight-verdict">
+          <div class="spotlight-top">
             <span class="tag ${item.verdict}">${item.verdict}</span>
             <span class="small">Latest decision</span>
           </div>
