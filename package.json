@@ -8,6 +8,7 @@
     "bench": "node src/bench/run.js",
     "demo": "node src/demo.js",
     "dev": "node src/server.js",
+    "deploy:vercel": "npx vercel@latest --prod --yes",
     "mcp:proxy": "node src/mcp-proxy.js",
     "test": "node --test"
   },

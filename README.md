@@ -40,6 +40,7 @@ npm run dev
 Then open `http://localhost:8787`.
 
 For Qwen setup, see [docs/SETUP.md](docs/SETUP.md).
+For deployment notes, see [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md).
 For hackathon submission text and demo flow, see [SUBMISSION.md](SUBMISSION.md).
 
 ## Core Flow
