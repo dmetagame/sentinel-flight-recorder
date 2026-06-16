@@ -1,0 +1,24 @@
+{
+  "mode": "paper",
+  "portfolio": {
+    "maxDailyLossPct": 3,
+    "maxTotalExposurePct": 120
+  },
+  "trade": {
+    "maxRiskPct": 1,
+    "maxLeverage": 5,
+    "requireStopLoss": true,
+    "defaultStopLossPct": 2,
+    "maxSlippageBps": 20,
+    "allowAutoResize": true,
+    "allowAutoStopLoss": true
+  },
+  "data": {
+    "maxAgeMs": 15000
+  },
+  "security": {
+    "allowTransfers": false,
+    "duplicateWindowMs": 60000
+  },
+  "allowedSymbols": ["BTCUSDT", "ETHUSDT"]
+}
