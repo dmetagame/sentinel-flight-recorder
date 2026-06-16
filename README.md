@@ -1,5 +1,10 @@
 # Sentinel Flight Recorder
 
+[![CI](https://github.com/dmetagame/sentinel-flight-recorder/actions/workflows/ci.yml/badge.svg)](https://github.com/dmetagame/sentinel-flight-recorder/actions/workflows/ci.yml)
+![Node](https://img.shields.io/badge/node-%3E%3D20-5eead4)
+![Track](https://img.shields.io/badge/Bitget%20Hackathon-Track%202%20Trading%20Infra-7dd3fc)
+![Mode](https://img.shields.io/badge/execution-paper--safe-fbbf24)
+
 Sentinel is an MCP-native safety benchmark and execution-control plane for autonomous Bitget trading agents.
 
 It sits between an AI agent and Bitget Agent Hub. Read-only calls pass through. Dangerous execution calls are inspected by a deterministic policy engine before they can reach an exchange adapter.
