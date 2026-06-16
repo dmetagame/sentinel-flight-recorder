@@ -9,6 +9,8 @@ Sentinel is an MCP-native safety benchmark and execution-control plane for auton
 
 It sits between an AI agent and Bitget Agent Hub. Read-only calls pass through. Dangerous execution calls are inspected by a deterministic policy engine before they can reach an exchange adapter.
 
+Live demo: https://sentinel-flight-recorder.vercel.app
+
 The hackathon thesis:
 
 > Before autonomous trading agents get execution rights, they need a control plane that can prove they trade safely.

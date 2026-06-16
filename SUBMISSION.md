@@ -20,6 +20,10 @@ Word count: 198
 
 Sentinel is the safety control plane that lets any Bitget trading agent prove it can trade safely before it gets execution rights.
 
+## Live Demo
+
+https://sentinel-flight-recorder.vercel.app
+
 ## Why This Fits Track 2
 
 - It is infrastructure for other AI trading agents, not a standalone strategy.
