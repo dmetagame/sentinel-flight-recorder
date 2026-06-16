@@ -8,21 +8,22 @@
       :root {
         color-scheme: dark;
         font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-        --bg: #040404;
-        --bg-2: #07120d;
-        --panel: rgba(11, 23, 16, 0.76);
-        --panel-2: rgba(20, 37, 27, 0.62);
-        --line: rgba(124, 255, 179, 0.16);
-        --line-strong: rgba(10, 253, 103, 0.38);
-        --text: #effff4;
-        --muted: #b6d1c4;
-        --muted-2: #70a384;
-        --green: #0afd67;
-        --green-2: #3a9755;
-        --yellow: #fbbf24;
-        --red: #fb7185;
-        --blue: #7dd3fc;
-        --shadow: 0 30px 120px rgba(0, 0, 0, 0.45);
+        --lime-bg: #d8ea3c;
+        --lime-soft: #efff69;
+        --ink: #0d1014;
+        --ink-2: #11161c;
+        --card: #151a21;
+        --card-2: #10151b;
+        --line: rgba(255, 255, 255, 0.08);
+        --line-strong: rgba(216, 234, 60, 0.35);
+        --text: #effff5;
+        --muted: #87919c;
+        --muted-2: #b5bec7;
+        --green: #10e7a1;
+        --yellow: #e8f34a;
+        --red: #ff6b7a;
+        --blue: #7cc7ff;
+        --shadow: 0 34px 90px rgba(10, 14, 20, 0.34);
       }
 
       * {
@@ -38,34 +39,50 @@
         min-height: 100vh;
         color: var(--text);
         background:
-          radial-gradient(circle at 72% 12%, rgba(10, 253, 103, 0.20), transparent 26rem),
-          radial-gradient(circle at 0% 0%, rgba(43, 88, 60, 0.42), transparent 30rem),
-          linear-gradient(145deg, #040404 0%, #07120d 52%, #040404 100%);
+          radial-gradient(circle at 20% 10%, rgba(255, 255, 255, 0.32), transparent 18rem),
+          radial-gradient(circle at 86% 0%, rgba(255, 255, 255, 0.22), transparent 18rem),
+          linear-gradient(135deg, var(--lime-soft), var(--lime-bg) 52%, #cddf34);
+        overflow-x: hidden;
+      }
+
+      body::before,
+      body::after {
+        content: "";
+        position: fixed;
+        pointer-events: none;
+        border-radius: 50%;
+        opacity: 0.28;
       }
 
       body::before {
-        content: "";
-        position: fixed;
-        inset: 0;
-        pointer-events: none;
-        background-image:
-          linear-gradient(rgba(255, 255, 255, 0.025) 1px, transparent 1px),
-          linear-gradient(90deg, rgba(255, 255, 255, 0.025) 1px, transparent 1px);
-        background-size: 72px 72px;
-        mask-image: linear-gradient(to bottom, black, transparent 82%);
+        width: 560px;
+        height: 560px;
+        right: -120px;
+        top: -180px;
+        background: rgba(255, 255, 255, 0.42);
+      }
+
+      body::after {
+        width: 760px;
+        height: 760px;
+        left: -260px;
+        bottom: -440px;
+        background: rgba(255, 255, 255, 0.24);
       }
 
       main {
-        width: min(1180px, calc(100% - 36px));
+        width: min(1240px, calc(100% - 34px));
         margin: 0 auto;
+        padding: 36px 0 60px;
       }
 
-      nav {
+      .top-strip {
         display: flex;
         justify-content: space-between;
         align-items: center;
-        gap: 16px;
-        padding: 24px 0;
+        gap: 14px;
+        margin-bottom: 18px;
+        color: #1e261c;
       }
 
       .brand {
@@ -77,440 +94,394 @@
       }
 
       .brand-mark {
-        width: 38px;
-        height: 38px;
+        width: 42px;
+        height: 42px;
         display: grid;
         place-items: center;
-        border-radius: 14px;
-        color: #031507;
-        background: linear-gradient(135deg, var(--green), #b6ffd1);
-        box-shadow: 0 0 40px rgba(10, 253, 103, 0.38);
+        border-radius: 15px;
+        color: #10150e;
+        background: #ffffff;
+        box-shadow: 0 18px 45px rgba(0, 0, 0, 0.16);
       }
 
-      .nav-links {
+      .external-links {
         display: flex;
         gap: 8px;
         align-items: center;
-        border: 1px solid var(--line);
-        background: rgba(255, 255, 255, 0.04);
-        padding: 6px;
-        border-radius: 999px;
       }
 
-      .nav-links a {
-        color: var(--muted);
+      .external-links a {
+        color: #1e261c;
         text-decoration: none;
         font-size: 13px;
-        font-weight: 800;
-        padding: 9px 12px;
-        border-radius: 999px;
-      }
-
-      .nav-links a:hover {
-        color: var(--text);
-        background: rgba(255, 255, 255, 0.06);
-      }
-
-      .nav-cta {
-        color: #061007;
-        background: var(--green);
-        box-shadow: 0 0 30px rgba(10, 253, 103, 0.24);
-      }
-
-      .hero {
-        display: grid;
-        grid-template-columns: 0.94fr 1.06fr;
-        gap: 30px;
-        align-items: center;
-        padding: 42px 0 28px;
-      }
-
-      .kicker {
-        display: inline-flex;
-        align-items: center;
-        gap: 10px;
-        color: #d9ffe7;
-        background: rgba(10, 253, 103, 0.08);
-        border: 1px solid var(--line-strong);
-        padding: 9px 13px;
-        border-radius: 999px;
-        font-size: 12px;
         font-weight: 900;
-        letter-spacing: 0.08em;
-        text-transform: uppercase;
+        border: 1px solid rgba(16, 21, 14, 0.12);
+        background: rgba(255, 255, 255, 0.28);
+        border-radius: 999px;
+        padding: 9px 12px;
       }
 
-      .pulse {
-        width: 8px;
-        height: 8px;
-        border-radius: 50%;
-        background: var(--green);
-        box-shadow: 0 0 0 8px rgba(10, 253, 103, 0.12), 0 0 26px rgba(10, 253, 103, 0.8);
+      .app-shell {
+        display: grid;
+        grid-template-columns: 74px 1fr;
+        background: var(--ink);
+        border: 1px solid rgba(255, 255, 255, 0.10);
+        border-radius: 28px;
+        min-height: 720px;
+        box-shadow: var(--shadow);
+        overflow: hidden;
+        position: relative;
       }
 
-      h1 {
-        margin: 22px 0 18px;
-        font-size: clamp(44px, 7vw, 84px);
-        line-height: 0.9;
-        letter-spacing: -0.08em;
+      .app-shell::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+        background:
+          radial-gradient(circle at 82% 0%, rgba(16, 231, 161, 0.12), transparent 22rem),
+          radial-gradient(circle at 28% 8%, rgba(232, 243, 74, 0.08), transparent 20rem);
       }
 
-      .gradient {
-        color: transparent;
-        background: linear-gradient(90deg, #ffffff, #b6d1c4 38%, var(--green));
-        -webkit-background-clip: text;
-        background-clip: text;
-      }
-
-      .hero-copy {
-        color: var(--muted);
-        font-size: 18px;
-        line-height: 1.65;
-        max-width: 660px;
-      }
-
-      .hero-actions {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 12px;
-        margin: 28px 0;
-      }
-
-      .btn {
-        display: inline-flex;
+      .sidebar {
+        position: relative;
+        z-index: 1;
+        display: grid;
+        grid-template-rows: auto 1fr auto;
         align-items: center;
-        justify-content: center;
-        gap: 8px;
-        min-height: 48px;
-        border: 1px solid transparent;
-        border-radius: 999px;
-        padding: 13px 18px;
+        justify-items: center;
+        border-right: 1px solid rgba(255, 255, 255, 0.06);
+        background: #0a0e12;
+        padding: 18px 0;
+      }
+
+      .logo {
+        width: 38px;
+        height: 38px;
+        border-radius: 14px;
+        display: grid;
+        place-items: center;
+        color: #10150e;
         font-weight: 950;
+        background: linear-gradient(135deg, var(--yellow), var(--green));
+      }
+
+      .rail {
+        display: grid;
+        gap: 18px;
+      }
+
+      .rail a,
+      .avatar {
+        width: 38px;
+        height: 38px;
+        border-radius: 14px;
+        display: grid;
+        place-items: center;
+        color: #65707a;
         text-decoration: none;
-        cursor: pointer;
+        background: transparent;
+        border: 1px solid transparent;
       }
 
-      .btn-primary {
-        color: #041107;
-        background: var(--green);
-        box-shadow: 0 18px 50px rgba(10, 253, 103, 0.24);
-      }
-
-      .btn-secondary {
+      .rail a.active,
+      .rail a:hover {
         color: var(--text);
+        background: #151a21;
         border-color: var(--line);
-        background: rgba(255, 255, 255, 0.05);
       }
 
-      .badges {
+      .avatar {
+        color: #10150e;
+        font-weight: 950;
+        background: linear-gradient(135deg, #ffffff, #c3cfcd);
+      }
+
+      .workspace {
+        position: relative;
+        z-index: 1;
+        padding: 22px;
+      }
+
+      .app-topbar {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 16px;
+        align-items: center;
+        margin-bottom: 18px;
+      }
+
+      .title-block h1 {
+        margin: 0;
+        font-size: clamp(28px, 4vw, 44px);
+        letter-spacing: -0.06em;
+      }
+
+      .title-block p {
+        margin: 8px 0 0;
+        color: var(--muted);
+        line-height: 1.55;
+        max-width: 720px;
+      }
+
+      .search {
+        min-width: 230px;
+        color: var(--muted);
+        border: 1px solid var(--line);
+        background: #0a0e12;
+        border-radius: 999px;
+        padding: 12px 14px;
+        font-size: 13px;
+      }
+
+      .filters {
         display: flex;
         flex-wrap: wrap;
         gap: 8px;
+        margin-bottom: 18px;
       }
 
-      .badge {
+      .filter,
+      .pill {
         border: 1px solid var(--line);
-        color: var(--muted);
-        background: rgba(255, 255, 255, 0.04);
+        color: var(--muted-2);
+        background: rgba(255, 255, 255, 0.035);
         border-radius: 999px;
-        padding: 8px 11px;
+        padding: 8px 10px;
         font-size: 12px;
         font-weight: 850;
       }
 
-      .terminal-shell {
-        position: relative;
-        border: 1px solid var(--line);
-        border-radius: 34px;
-        padding: 18px;
-        background:
-          radial-gradient(circle at top right, rgba(10, 253, 103, 0.22), transparent 16rem),
-          linear-gradient(145deg, rgba(11, 23, 16, 0.92), rgba(4, 4, 4, 0.72));
-        box-shadow: var(--shadow);
+      .filter.hot,
+      .pill.hot {
+        color: #10150e;
+        background: var(--yellow);
       }
 
-      .terminal-shell::before {
-        content: "";
-        position: absolute;
-        inset: -1px;
-        z-index: -1;
-        border-radius: 35px;
-        background: linear-gradient(135deg, rgba(10, 253, 103, 0.72), transparent 40%, rgba(112, 163, 132, 0.2));
-        filter: blur(20px);
-        opacity: 0.38;
-      }
-
-      .terminal-top {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        gap: 12px;
-        padding: 6px 8px 16px;
-      }
-
-      .traffic {
-        display: flex;
-        gap: 7px;
-      }
-
-      .traffic span {
-        width: 11px;
-        height: 11px;
-        border-radius: 50%;
-        background: #3b463e;
-      }
-
-      .traffic span:nth-child(1) { background: var(--red); }
-      .traffic span:nth-child(2) { background: var(--yellow); }
-      .traffic span:nth-child(3) { background: var(--green); }
-
-      .status-pill {
-        border: 1px solid rgba(10, 253, 103, 0.28);
-        background: rgba(10, 253, 103, 0.08);
-        color: #d9ffe7;
-        border-radius: 999px;
-        padding: 7px 10px;
-        font-size: 12px;
-        font-weight: 900;
-      }
-
-      .chart-card {
-        border: 1px solid var(--line);
-        border-radius: 26px;
-        padding: 18px;
-        background: rgba(0, 0, 0, 0.30);
-      }
-
-      .chart-head {
-        display: flex;
-        justify-content: space-between;
+      .dashboard-grid {
+        display: grid;
+        grid-template-columns: 1.25fr 0.75fr;
         gap: 16px;
+      }
+
+      .cards-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 14px;
+      }
+
+      .bot-card,
+      .panel,
+      .stat-card,
+      .scenario-card {
+        border: 1px solid var(--line);
+        background:
+          radial-gradient(circle at 100% 0%, rgba(16, 231, 161, 0.08), transparent 10rem),
+          var(--card);
+        border-radius: 18px;
+        padding: 15px;
+        box-shadow: 0 14px 45px rgba(0, 0, 0, 0.18);
+      }
+
+      .bot-card {
+        display: grid;
+        gap: 12px;
+        min-height: 238px;
+      }
+
+      .card-head {
+        display: flex;
+        justify-content: space-between;
+        gap: 12px;
         align-items: start;
       }
 
-      .chart-head strong {
-        display: block;
-        font-size: 28px;
-        letter-spacing: -0.04em;
-      }
-
-      .chart-head span,
-      .small {
-        color: var(--muted-2);
-        font-size: 13px;
-      }
-
-      .sparkline {
-        width: 100%;
-        height: 170px;
-        margin-top: 12px;
-      }
-
-      .trade-row {
-        display: grid;
-        grid-template-columns: 1fr auto;
-        gap: 14px;
+      .asset {
+        display: flex;
         align-items: center;
-        border: 1px solid var(--line);
-        background: rgba(255, 255, 255, 0.04);
-        border-radius: 18px;
-        padding: 13px;
-        margin-top: 10px;
+        gap: 8px;
       }
 
-      .trade-row strong {
+      .coin {
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        display: grid;
+        place-items: center;
+        font-size: 11px;
+        color: #10150e;
+        font-weight: 950;
+        background: var(--yellow);
+      }
+
+      .asset strong {
         display: block;
+        font-size: 14px;
+      }
+
+      .asset span,
+      .small {
+        display: block;
+        color: var(--muted);
+        font-size: 12px;
       }
 
       .tag {
         width: max-content;
         border-radius: 999px;
-        padding: 6px 10px;
-        font-size: 12px;
+        padding: 6px 9px;
+        font-size: 11px;
         font-weight: 950;
         text-transform: uppercase;
       }
 
-      .allow { background: rgba(10, 253, 103, 0.14); color: var(--green); }
-      .modify { background: rgba(251, 191, 36, 0.14); color: var(--yellow); }
-      .block { background: rgba(251, 113, 133, 0.14); color: var(--red); }
+      .allow { color: var(--green); background: rgba(16, 231, 161, 0.13); }
+      .modify { color: var(--yellow); background: rgba(232, 243, 74, 0.13); }
+      .block { color: var(--red); background: rgba(255, 107, 122, 0.13); }
 
-      .section {
-        padding: 48px 0 0;
-      }
-
-      .section-head {
+      .metric {
         display: flex;
         justify-content: space-between;
-        gap: 18px;
+        gap: 10px;
         align-items: end;
-        margin-bottom: 16px;
       }
 
-      h2 {
-        margin: 0;
-        font-size: clamp(28px, 4vw, 46px);
-        line-height: 1;
-        letter-spacing: -0.06em;
-      }
-
-      .section-head p {
-        margin: 0;
-        color: var(--muted);
-        max-width: 560px;
-        line-height: 1.55;
-      }
-
-      .stats {
-        display: grid;
-        grid-template-columns: repeat(6, 1fr);
-        gap: 12px;
-      }
-
-      .stat,
-      .panel,
-      .scenario,
-      .timeline-item,
-      .policy-box {
-        border: 1px solid var(--line);
-        background: var(--panel);
-        border-radius: 24px;
-        padding: 17px;
-        box-shadow: 0 16px 70px rgba(0, 0, 0, 0.24);
-      }
-
-      .stat strong {
-        display: block;
-        font-size: 32px;
+      .metric strong {
+        color: var(--green);
+        font-size: 28px;
         letter-spacing: -0.05em;
       }
 
-      .stat.feature {
-        border-color: var(--line-strong);
-        background:
-          radial-gradient(circle at top right, rgba(10, 253, 103, 0.18), transparent 10rem),
-          var(--panel);
+      .spark {
+        width: 100%;
+        height: 54px;
       }
 
-      .guard-grid {
+      .card-actions {
         display: grid;
-        grid-template-columns: 0.95fr 1.05fr;
-        gap: 16px;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
       }
 
-      textarea,
+      .btn {
+        border: 0;
+        border-radius: 10px;
+        min-height: 36px;
+        font-weight: 950;
+        cursor: pointer;
+      }
+
+      .btn-ghost {
+        color: #10150e;
+        background: var(--yellow);
+      }
+
+      .btn-main {
+        color: #06120d;
+        background: var(--green);
+      }
+
+      .side-stack {
+        display: grid;
+        gap: 14px;
+      }
+
+      .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+      }
+
+      .stat-card strong {
+        display: block;
+        font-size: 26px;
+        letter-spacing: -0.05em;
+      }
+
+      .policy-textarea,
       pre {
         width: 100%;
-        border-radius: 18px;
         border: 1px solid var(--line);
-        background: rgba(0, 0, 0, 0.28);
+        background: #0a0e12;
         color: var(--text);
-        padding: 14px;
+        border-radius: 14px;
+        padding: 12px;
         font: inherit;
       }
 
-      textarea {
-        min-height: 116px;
+      .policy-textarea {
+        min-height: 122px;
         resize: vertical;
       }
 
       pre {
         overflow: auto;
         white-space: pre-wrap;
-        max-height: 360px;
-      }
-
-      button {
-        border: 0;
-        margin: 8px 8px 8px 0;
-      }
-
-      .button-bar {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 8px;
-        margin: 10px 0;
-      }
-
-      .split {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 12px;
+        max-height: 330px;
       }
 
       .spotlight {
-        border: 1px solid var(--line-strong);
+        border-color: var(--line-strong);
         background:
-          radial-gradient(circle at top right, rgba(10, 253, 103, 0.16), transparent 14rem),
-          rgba(7, 18, 13, 0.82);
-        border-radius: 26px;
-        padding: 18px;
-        margin-bottom: 14px;
-      }
-
-      .spotlight-top {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 10px;
+          radial-gradient(circle at 100% 0%, rgba(232, 243, 74, 0.12), transparent 10rem),
+          var(--card-2);
       }
 
       .spotlight strong {
         display: block;
-        margin-top: 12px;
-        font-size: 34px;
+        font-size: 26px;
         letter-spacing: -0.05em;
+        margin: 10px 0;
       }
 
-      .receipt-line {
+      .receipt {
         border-top: 1px solid var(--line);
-        margin-top: 14px;
-        padding-top: 12px;
+        padding-top: 10px;
+        margin-top: 12px;
       }
 
       .timeline {
         display: grid;
-        gap: 10px;
+        gap: 8px;
       }
 
       .timeline-item {
         display: grid;
         grid-template-columns: auto 1fr;
-        gap: 12px;
+        gap: 10px;
+        border: 1px solid var(--line);
+        background: rgba(255, 255, 255, 0.035);
+        border-radius: 14px;
+        padding: 10px;
       }
 
       .dot {
-        width: 14px;
-        height: 14px;
+        width: 12px;
+        height: 12px;
         border-radius: 50%;
+        margin-top: 4px;
         background: var(--green);
-        margin-top: 5px;
-        box-shadow: 0 0 24px rgba(10, 253, 103, 0.72);
+        box-shadow: 0 0 18px rgba(16, 231, 161, 0.62);
+      }
+
+      .bench-section {
+        margin-top: 18px;
       }
 
       .scenario-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-        gap: 14px;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 12px;
       }
 
-      .scenario {
+      .scenario-card {
+        min-height: 188px;
         display: grid;
-        gap: 10px;
-        min-height: 220px;
-        transition: transform 150ms ease, border-color 150ms ease;
+        gap: 8px;
       }
 
-      .scenario:hover {
-        transform: translateY(-3px);
+      .scenario-card:hover {
         border-color: var(--line-strong);
-      }
-
-      .baseline { border-color: rgba(10, 253, 103, 0.25); }
-      .risk-repair { border-color: rgba(251, 191, 36, 0.28); }
-      .prompt-injection, .fund-safety { border-color: rgba(251, 113, 133, 0.34); }
-      .portfolio-risk, .data-quality, .execution-quality, .allowlist, .idempotency, .malformed-intent, .mandate-drift {
-        border-color: rgba(112, 163, 132, 0.28);
       }
 
       code {
@@ -518,32 +489,40 @@
         overflow-wrap: anywhere;
       }
 
-      @media (max-width: 980px) {
-        .hero,
-        .guard-grid,
-        .split {
+      a {
+        color: inherit;
+      }
+
+      @media (max-width: 1100px) {
+        .dashboard-grid {
           grid-template-columns: 1fr;
-        }
-
-        .stats {
-          grid-template-columns: repeat(2, 1fr);
-        }
-
-        .nav-links {
-          display: none;
         }
       }
 
-      @media (max-width: 560px) {
-        body {
-          padding: 18px;
-        }
-
+      @media (max-width: 840px) {
         main {
-          width: 100%;
+          width: min(100% - 22px, 1240px);
+          padding-top: 18px;
         }
 
-        .stats {
+        .external-links {
+          display: none;
+        }
+
+        .app-shell {
+          grid-template-columns: 1fr;
+        }
+
+        .sidebar {
+          display: none;
+        }
+
+        .app-topbar {
+          grid-template-columns: 1fr;
+        }
+
+        .cards-grid,
+        .stats-grid {
           grid-template-columns: 1fr;
         }
       }
@@ -551,151 +530,137 @@
   </head>
   <body>
     <main>
-      <nav>
+      <div class="top-strip">
         <div class="brand">
           <span class="brand-mark">S</span>
           <span>Sentinel Flight Recorder</span>
         </div>
-        <div class="nav-links">
-          <a href="#guard">Live Guard</a>
-          <a href="#bench">Benchmark</a>
+        <div class="external-links">
           <a href="https://github.com/dmetagame/sentinel-flight-recorder">GitHub</a>
-          <a class="nav-cta" href="#guard">Run Demo</a>
+          <a href="#bench">Sentinel Bench</a>
+          <a href="#guard">Run Guard</a>
         </div>
-      </nav>
+      </div>
 
-      <section class="hero">
-        <div>
-          <div class="kicker"><span class="pulse"></span> Bitget AI Base Camp S1 - Track 2</div>
-          <h1><span class="gradient">Autonomous agents</span><br />need an execution firewall.</h1>
-          <p class="hero-copy">
-            Sentinel sits in front of Bitget Agent Hub, converts trading intent into audited decisions,
-            and deterministically allows, repairs, or blocks every dangerous tool call.
-          </p>
-          <div class="hero-actions">
-            <a class="btn btn-primary" href="#guard">Test the Guard</a>
-            <a class="btn btn-secondary" href="#bench">View 20 Threat Cases</a>
+      <section class="app-shell">
+        <aside class="sidebar">
+          <div class="logo">S</div>
+          <div class="rail">
+            <a class="active" href="#guard">G</a>
+            <a href="#bench">B</a>
+            <a href="https://github.com/dmetagame/sentinel-flight-recorder">GH</a>
           </div>
-          <div class="badges">
-            <span class="badge">MCP Proxy</span>
-            <span class="badge">Qwen Policy Compiler</span>
-            <span class="badge">Deterministic Authorization</span>
-            <span class="badge">Merkle Receipts</span>
-          </div>
-        </div>
+          <div class="avatar">AI</div>
+        </aside>
 
-        <div class="terminal-shell">
-          <div class="terminal-top">
-            <div class="traffic"><span></span><span></span><span></span></div>
-            <div class="status-pill">20/20 Sentinel Bench</div>
+        <div class="workspace">
+          <div class="app-topbar">
+            <div class="title-block">
+              <h1>AI Trading Safety</h1>
+              <p>Sentinel sits before Bitget Agent Hub and turns every autonomous execution request into an audited allow, repair, or block decision.</p>
+            </div>
+            <div class="search">Search: BTCUSDT, policy, receipt...</div>
           </div>
-          <div class="chart-card">
-            <div class="chart-head">
-              <div>
-                <span>Protected execution volume</span>
-                <strong>$128.4M</strong>
+
+          <div class="filters">
+            <span class="filter hot">All tool calls</span>
+            <span class="filter">Runtime AI</span>
+            <span class="filter">Receipts: live</span>
+            <span class="filter">Risk budget</span>
+            <span class="filter">Sort by: Threat</span>
+          </div>
+
+          <div class="dashboard-grid" id="guard">
+            <div>
+              <div class="cards-grid">
+                <article class="bot-card">
+                  <div class="card-head">
+                    <div class="asset"><span class="coin">B</span><div><strong>BTCUSDT Perp</strong><span>Safe execution intent</span></div></div>
+                    <span class="tag allow">allow</span>
+                  </div>
+                  <div class="metric"><strong>0.4%</strong><span class="small">risk budget used</span></div>
+                  <svg class="spark" viewBox="0 0 280 64"><path d="M0 40 C28 30 42 18 68 26 C98 36 112 12 138 18 C172 25 184 42 214 28 C238 18 252 25 280 16" fill="none" stroke="#10e7a1" stroke-width="4" stroke-linecap="round"/></svg>
+                  <div class="card-actions"><button class="btn btn-ghost" data-demo="safe">Inspect</button><button class="btn btn-main" data-demo="safe">Run Guard</button></div>
+                </article>
+
+                <article class="bot-card">
+                  <div class="card-head">
+                    <div class="asset"><span class="coin">E</span><div><strong>ETHUSDT Perp</strong><span>Missing stop repair</span></div></div>
+                    <span class="tag modify">modify</span>
+                  </div>
+                  <div class="metric"><strong>1 fix</strong><span class="small">stop loss attached</span></div>
+                  <svg class="spark" viewBox="0 0 280 64"><path d="M0 28 C28 38 44 42 68 34 C92 27 110 18 136 31 C160 43 178 39 204 28 C232 17 250 20 280 34" fill="none" stroke="#e8f34a" stroke-width="4" stroke-linecap="round"/></svg>
+                  <div class="card-actions"><button class="btn btn-ghost" data-demo="missingStop">Inspect</button><button class="btn btn-main" data-demo="missingStop">Run Guard</button></div>
+                </article>
+
+                <article class="bot-card">
+                  <div class="card-head">
+                    <div class="asset"><span class="coin">P</span><div><strong>Prompt Injection</strong><span>50x + unsupported symbol</span></div></div>
+                    <span class="tag block">block</span>
+                  </div>
+                  <div class="metric"><strong>50x</strong><span class="small">leverage rejected</span></div>
+                  <svg class="spark" viewBox="0 0 280 64"><path d="M0 20 C24 17 38 44 66 42 C94 39 105 16 132 18 C164 20 170 48 204 45 C234 42 248 18 280 25" fill="none" stroke="#ff6b7a" stroke-width="4" stroke-linecap="round"/></svg>
+                  <div class="card-actions"><button class="btn btn-ghost" data-demo="injection">Inspect</button><button class="btn btn-main" data-demo="injection">Run Guard</button></div>
+                </article>
+
+                <article class="bot-card">
+                  <div class="card-head">
+                    <div class="asset"><span class="coin">T</span><div><strong>Transfer Tool</strong><span>Fund movement attempt</span></div></div>
+                    <span class="tag block">block</span>
+                  </div>
+                  <div class="metric"><strong>$1k</strong><span class="small">transfer prevented</span></div>
+                  <svg class="spark" viewBox="0 0 280 64"><path d="M0 24 C24 24 34 32 58 34 C90 38 104 42 132 30 C164 18 178 17 206 25 C238 34 254 18 280 20" fill="none" stroke="#10e7a1" stroke-width="4" stroke-linecap="round"/></svg>
+                  <div class="card-actions"><button class="btn btn-ghost" data-demo="transfer">Inspect</button><button class="btn btn-main" data-demo="transfer">Run Guard</button></div>
+                </article>
               </div>
-              <span class="tag allow">paper safe</span>
-            </div>
-            <svg class="sparkline" viewBox="0 0 600 220" role="img" aria-label="Stylized trading chart">
-              <defs>
-                <linearGradient id="area" x1="0" x2="0" y1="0" y2="1">
-                  <stop offset="0%" stop-color="#0afd67" stop-opacity="0.34" />
-                  <stop offset="100%" stop-color="#0afd67" stop-opacity="0" />
-                </linearGradient>
-              </defs>
-              <path d="M0 175 C48 168 58 126 102 132 C154 138 160 90 207 98 C249 105 263 55 311 68 C359 82 372 40 418 48 C471 58 492 25 600 36 L600 220 L0 220 Z" fill="url(#area)" />
-              <path d="M0 175 C48 168 58 126 102 132 C154 138 160 90 207 98 C249 105 263 55 311 68 C359 82 372 40 418 48 C471 58 492 25 600 36" fill="none" stroke="#0afd67" stroke-width="5" stroke-linecap="round" />
-              <g stroke="rgba(182,209,196,0.14)">
-                <line x1="0" y1="60" x2="600" y2="60" />
-                <line x1="0" y1="120" x2="600" y2="120" />
-                <line x1="0" y1="180" x2="600" y2="180" />
-              </g>
-            </svg>
-            <div class="trade-row">
-              <div>
-                <strong>Prompt injection: 50x BTC long</strong>
-                <span class="small">Leverage capped, policy hash recorded</span>
-              </div>
-              <span class="tag modify">modify</span>
-            </div>
-            <div class="trade-row">
-              <div>
-                <strong>Unauthorized transfer request</strong>
-                <span class="small">Blocked before upstream tool call</span>
-              </div>
-              <span class="tag block">block</span>
-            </div>
-          </div>
-        </div>
-      </section>
 
-      <section class="section" id="bench">
-        <div class="section-head">
-          <h2>Red-team benchmark</h2>
-          <p>Sentinel Bench attacks the execution layer with prompt injection, malformed orders, stale data, leverage drift, and fund-movement attempts.</p>
-        </div>
-        <div class="stats" id="summary"></div>
-      </section>
-
-      <section class="section" id="guard">
-        <div class="section-head">
-          <h2>Live guard demo</h2>
-          <p>Compile a natural-language risk mandate, then send Bitget Agent Hub-style tool calls through Sentinel.</p>
-        </div>
-        <div class="guard-grid">
-          <div class="panel">
-            <h3>Natural-language risk mandate</h3>
-            <textarea id="policyText">Trade BTC and ETH only. Risk at most 1% per position. Use maximum 5x leverage. Stop trading after losing 3% daily. Require stop loss.</textarea>
-            <div class="button-bar">
-              <button class="btn btn-primary" id="compilePolicy">Compile Policy</button>
-              <button class="btn btn-secondary" data-demo="safe">Safe BTC Order</button>
-              <button class="btn btn-secondary" data-demo="missingStop">Missing Stop</button>
-              <button class="btn btn-secondary" data-demo="injection">Prompt Injection</button>
-              <button class="btn btn-secondary" data-demo="transfer">Transfer Attempt</button>
+              <section class="bench-section" id="bench">
+                <div class="filters">
+                  <span class="pill hot">Sentinel Bench</span>
+                  <span class="pill">20 adversarial cases</span>
+                  <span class="pill">Merkle receipts</span>
+                </div>
+                <div class="scenario-grid" id="scenarios"></div>
+              </section>
             </div>
-            <div class="split">
-              <div class="policy-box">
-                <strong>Compiled Policy</strong>
+
+            <aside class="side-stack">
+              <div class="stats-grid" id="summary"></div>
+
+              <div class="panel">
+                <h3>Natural-language risk mandate</h3>
+                <textarea class="policy-textarea" id="policyText">Trade BTC and ETH only. Risk at most 1% per position. Use maximum 5x leverage. Stop trading after losing 3% daily. Require stop loss.</textarea>
+                <button class="btn btn-main" id="compilePolicy">Compile Policy</button>
                 <pre id="policyResult">Click Compile Policy.</pre>
               </div>
-              <div class="policy-box">
-                <strong>Latest Receipt</strong>
+
+              <div class="panel spotlight" id="spotlight">
+                <span class="tag allow">ready</span>
+                <strong>No tool call yet</strong>
+                <span class="small">Run a guard card to watch Sentinel allow, repair, or block the execution call.</span>
+                <div class="receipt small"><code>receipt hash pending</code></div>
+              </div>
+
+              <div class="panel">
+                <h3>Latest receipt</h3>
                 <pre id="receiptResult">Run a guarded tool call.</pre>
               </div>
-            </div>
-          </div>
 
-          <div class="panel">
-            <div class="spotlight" id="spotlight">
-              <div class="spotlight-top">
-                <span class="tag allow">ready</span>
-                <span class="small">Latest decision</span>
-              </div>
-              <strong>No tool call yet</strong>
-              <p class="small">Run a demo action to watch Sentinel allow, repair, or block a Bitget Agent Hub-style call.</p>
-              <div class="receipt-line small"><code>receipt hash pending</code></div>
-            </div>
-            <h3>Agent intent timeline</h3>
-            <div class="timeline" id="timeline">
-              <div class="timeline-item">
-                <span class="dot"></span>
-                <div>
-                  <strong>Ready</strong>
-                  <div class="small">Choose a demo action to send an execution call through Sentinel.</div>
+              <div class="panel">
+                <h3>Agent intent timeline</h3>
+                <div class="timeline" id="timeline">
+                  <div class="timeline-item">
+                    <span class="dot"></span>
+                    <div>
+                      <strong>Ready</strong>
+                      <span class="small">Choose a guard card to send a Bitget Agent Hub-style call through Sentinel.</span>
+                    </div>
+                  </div>
                 </div>
               </div>
-            </div>
+            </aside>
           </div>
         </div>
-      </section>
-
-      <section class="section">
-        <div class="section-head">
-          <h2>Threat coverage</h2>
-          <p>Every card below is generated from the live benchmark API and produces a receipt hash.</p>
-        </div>
-        <div class="scenario-grid" id="scenarios"></div>
       </section>
     </main>
 
@@ -707,11 +672,9 @@
       const receiptResultEl = document.querySelector("#receiptResult");
       const timelineEl = document.querySelector("#timeline");
       const spotlightEl = document.querySelector("#spotlight");
-
       let timeline = [];
 
       loadBenchmark();
-
       document.querySelector("#compilePolicy").addEventListener("click", compilePolicy);
 
       const demos = {
@@ -721,19 +684,7 @@
             id: "ui-safe",
             agentId: "qwen-agent",
             name: "futures_place_order",
-            arguments: {
-              orders: [{
-                symbol: "BTCUSDT",
-                side: "buy",
-                orderType: "market",
-                size: "0.02",
-                price: "100000",
-                presetStopLossPrice: "98000",
-                presetStopSurplusPrice: "104000",
-                leverage: "3",
-                market: { markPrice: 100000, timestamp: Date.now() }
-              }]
-            }
+            arguments: { orders: [{ symbol: "BTCUSDT", side: "buy", orderType: "market", size: "0.02", price: "100000", presetStopLossPrice: "98000", presetStopSurplusPrice: "104000", leverage: "3", market: { markPrice: 100000, timestamp: Date.now() } }] }
           }
         },
         missingStop: {
@@ -742,17 +693,7 @@
             id: "ui-missing-stop",
             agentId: "qwen-agent",
             name: "futures_place_order",
-            arguments: {
-              orders: [{
-                symbol: "ETHUSDT",
-                side: "buy",
-                orderType: "market",
-                size: "1",
-                price: "4000",
-                leverage: "2",
-                market: { markPrice: 4000, timestamp: Date.now() }
-              }]
-            }
+            arguments: { orders: [{ symbol: "ETHUSDT", side: "buy", orderType: "market", size: "1", price: "4000", leverage: "2", market: { markPrice: 4000, timestamp: Date.now() } }] }
           }
         },
         injection: {
@@ -761,17 +702,7 @@
             id: "ui-injection",
             agentId: "compromised-agent",
             name: "futures_place_order",
-            arguments: {
-              orders: [{
-                symbol: "DOGEUSDT",
-                side: "buy",
-                orderType: "market",
-                size: "1000",
-                price: "0.15",
-                leverage: "50",
-                market: { markPrice: 0.15, timestamp: Date.now() }
-              }]
-            }
+            arguments: { orders: [{ symbol: "DOGEUSDT", side: "buy", orderType: "market", size: "1000", price: "0.15", leverage: "50", market: { markPrice: 0.15, timestamp: Date.now() } }] }
           }
         },
         transfer: {
@@ -780,10 +711,7 @@
             id: "ui-transfer",
             agentId: "compromised-agent",
             name: "account_transfer",
-            arguments: {
-              asset: "USDT",
-              amount: "1000"
-            }
+            arguments: { asset: "USDT", amount: "1000" }
           }
         }
       };
@@ -796,14 +724,12 @@
         const data = await fetchJson("/api/bench");
         const summary = data.summary;
         summaryEl.innerHTML = [
-          ["Benchmark Pass", `${(summary.passRate * 100).toFixed(0)}%`],
-          ["Threat Cases", summary.total],
+          ["Pass", `${(summary.passRate * 100).toFixed(0)}%`],
+          ["Cases", summary.total],
           ["Blocked", summary.blocked],
-          ["Repaired", summary.modified],
-          ["Allowed", summary.allowed],
-          ["Merkle Root", summary.receiptMerkleRoot.slice(0, 10) + "..."]
+          ["Repaired", summary.modified]
         ].map(([label, value], index) => `
-          <article class="stat ${index === 0 ? "feature" : ""}">
+          <article class="stat-card">
             <strong>${value}</strong>
             <span class="small">${label}</span>
           </article>
@@ -815,15 +741,12 @@
             .map((entry) => entry.message)
             .join(" ");
           return `
-            <article class="scenario ${item.category || ""}">
+            <article class="scenario-card">
               <span class="tag ${item.actual}">${item.actual}</span>
               <strong>${escapeHtml(item.threat || item.scenario)}</strong>
-              <div class="small">${escapeHtml(item.story || "")}</div>
-              <div class="${item.passed ? "allow" : "block"} tag">
-                expected ${item.expected}, got ${item.actual}
-              </div>
+              <span class="small">${escapeHtml(item.story || "")}</span>
               <small>${escapeHtml(reasons || "Policy-compliant execution.")}</small>
-              <small><code>${item.result.receipt.receiptHash.slice(0, 28)}...</code></small>
+              <small><code>${item.result.receipt.receiptHash.slice(0, 24)}...</code></small>
             </article>
           `;
         }).join("");
@@ -867,8 +790,7 @@
           explanation: payload.explanation.text,
           receiptHash: receipt.receiptHash,
           violations: decision.violations,
-          modifications: decision.modifications,
-          upstream: payload.upstream
+          modifications: decision.modifications
         };
         timeline = [row, ...timeline].slice(0, 6);
         renderTimeline();
@@ -883,8 +805,8 @@
             <div>
               <span class="tag ${item.verdict}">${item.verdict}</span>
               <strong>${escapeHtml(item.label)}</strong>
-              <div class="small">${escapeHtml(item.explanation)}</div>
-              <small><code>${item.receiptHash.slice(0, 36)}...</code></small>
+              <span class="small">${escapeHtml(item.explanation)}</span>
+              <small><code>${item.receiptHash.slice(0, 32)}...</code></small>
             </div>
           </div>
         `).join("");
@@ -892,21 +814,16 @@
 
       function renderSpotlight(item) {
         spotlightEl.innerHTML = `
-          <div class="spotlight-top">
-            <span class="tag ${item.verdict}">${item.verdict}</span>
-            <span class="small">Latest decision</span>
-          </div>
+          <span class="tag ${item.verdict}">${item.verdict}</span>
           <strong>${escapeHtml(item.label)}</strong>
-          <p class="small">${escapeHtml(item.explanation)}</p>
-          <div class="receipt-line small"><code>${item.receiptHash}</code></div>
+          <span class="small">${escapeHtml(item.explanation)}</span>
+          <div class="receipt small"><code>${item.receiptHash}</code></div>
         `;
       }
 
       async function fetchJson(url, options) {
         const response = await fetch(url, options);
-        if (!response.ok) {
-          throw new Error(await response.text());
-        }
+        if (!response.ok) throw new Error(await response.text());
         return response.json();
       }
 
