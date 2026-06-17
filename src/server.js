@@ -1,12 +1,13 @@
 import http from "node:http";
 import { readFile } from "node:fs/promises";
-import { join, extname } from "node:path";
+import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { runBenchmark } from "./bench/run.js";
 import { SentinelGate } from "./core/gate.js";
 import { createInitialState } from "./core/state.js";
 import { compilePolicy, explainDecisionWithQwen } from "./adapters/qwen.js";
 import { guardedToolCall } from "./adapters/agent-hub.js";
+import { contentType, resolvePublicPath } from "./http/static.js";
 
 const root = fileURLToPath(new URL("..", import.meta.url));
 const publicRoot = join(root, "public");
@@ -58,13 +59,12 @@ const server = http.createServer(async (req, res) => {
       return;
     }
 
-    const filePath = req.url === "/" ? "index.html" : req.url.slice(1);
-    const body = await readFile(join(publicRoot, filePath));
+    const filePath = resolvePublicPath(publicRoot, req.url ?? "/");
+    const body = await readFile(filePath);
     res.writeHead(200, { "content-type": contentType(filePath) });
     res.end(body);
   } catch (error) {
-    res.writeHead(404, { "content-type": "text/plain" });
-    res.end(error.message);
+    sendError(res, error);
   }
 });
 
@@ -77,6 +77,34 @@ function sendJson(res, payload) {
   res.end(JSON.stringify(payload, null, 2));
 }
 
+function sendError(res, error) {
+  const statusCode = statusCodeForError(error);
+  const message = messageForStatus(statusCode);
+  res.writeHead(statusCode, { "content-type": "text/plain; charset=utf-8" });
+  res.end(message);
+}
+
+function statusCodeForError(error) {
+  if (error?.statusCode) return error.statusCode;
+  if (error?.code === "ENOENT") return 404;
+  if (error?.code === "EACCES") return 403;
+  if (error instanceof SyntaxError) return 400;
+  return 500;
+}
+
+function messageForStatus(statusCode) {
+  switch (statusCode) {
+    case 400:
+      return "Bad request";
+    case 403:
+      return "Forbidden";
+    case 404:
+      return "Not found";
+    default:
+      return "Internal server error";
+  }
+}
+
 async function readJson(req) {
   const chunks = [];
   for await (const chunk of req) {
@@ -84,17 +112,4 @@ async function readJson(req) {
   }
   const raw = Buffer.concat(chunks).toString("utf8");
   return raw ? JSON.parse(raw) : {};
-}
-
-function contentType(path) {
-  switch (extname(path)) {
-    case ".html":
-      return "text/html; charset=utf-8";
-    case ".css":
-      return "text/css; charset=utf-8";
-    case ".js":
-      return "text/javascript; charset=utf-8";
-    default:
-      return "text/plain; charset=utf-8";
-  }
 }
