@@ -365,6 +365,89 @@
         text-transform: uppercase;
       }
 
+      /* ===== Judge demo path ===== */
+      .judge-path {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 22px;
+        align-items: stretch;
+        margin-bottom: 18px;
+        padding: 20px;
+        background:
+          radial-gradient(circle at 100% 0%, rgba(255, 90, 31, 0.14), transparent 22rem),
+          var(--surface);
+        border: 1px solid var(--tint-signal-strong);
+        border-radius: 16px;
+      }
+      .judge-path .eyebrow {
+        margin: 0 0 8px;
+        font-family: var(--font-mono);
+        font-weight: 600;
+        font-size: var(--t-eyebrow);
+        color: var(--signal);
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+      }
+      .judge-path h2 {
+        margin: 0;
+        max-width: 760px;
+        font-family: var(--font-sans);
+        font-weight: 600;
+        font-size: var(--t-h2);
+        line-height: 1.15;
+        letter-spacing: -0.01em;
+        color: var(--mist);
+      }
+      .judge-path p {
+        margin: 10px 0 0;
+        max-width: 820px;
+        color: var(--muted-2);
+      }
+      .judge-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 16px;
+      }
+      .judge-steps {
+        min-width: 330px;
+        margin: 0;
+        padding: 14px;
+        list-style: none;
+        display: grid;
+        gap: 10px;
+        background: rgba(0, 0, 0, 0.18);
+        border: 1px solid var(--line);
+        border-radius: 12px;
+      }
+      .judge-steps li {
+        display: grid;
+        grid-template-columns: 26px 1fr;
+        gap: 10px;
+        align-items: start;
+        color: var(--muted-2);
+        font-size: var(--t-small);
+      }
+      .judge-steps .num {
+        width: 26px;
+        height: 26px;
+        display: grid;
+        place-items: center;
+        border-radius: 8px;
+        background: var(--tint-signal);
+        border: 1px solid var(--tint-signal-strong);
+        color: var(--signal);
+        font-family: var(--font-mono);
+        font-weight: 600;
+        font-size: var(--t-status);
+      }
+      .judge-steps strong {
+        display: block;
+        margin-bottom: 2px;
+        color: var(--mist);
+        font-weight: 600;
+      }
+
       /* ===== Hero KPIs ===== */
       .hero-kpis {
         display: grid;
@@ -967,6 +1050,7 @@
         letter-spacing: 0.01em;
         cursor: pointer;
       }
+      .btn:disabled { opacity: 0.55; cursor: progress; }
       .btn-primary {
         margin-top: 10px;
         width: 100%;
@@ -974,6 +1058,18 @@
         background: var(--signal);
       }
       .btn-primary:hover { filter: brightness(1.07); }
+      .judge-actions .btn {
+        border: 1px solid var(--line);
+        color: var(--mist);
+        background: rgba(255, 255, 255, 0.03);
+      }
+      .judge-actions .btn-primary {
+        width: auto;
+        margin-top: 0;
+        border-color: transparent;
+        color: var(--carbon);
+        background: var(--signal);
+      }
 
       pre {
         margin: 12px 0 0;
@@ -1129,11 +1225,12 @@
 
       /* ===== Responsive ===== */
       @media (max-width: 1180px) {
-        .layout, .charts-row, .docs { grid-template-columns: 1fr; }
+        .layout, .charts-row, .docs, .judge-path { grid-template-columns: 1fr; }
         .kpis { grid-template-columns: repeat(3, 1fr); }
         .hero-kpis { grid-template-columns: 1fr; }
         .service-grid { grid-template-columns: repeat(2, 1fr); }
         .code-catalog li { grid-template-columns: 1fr; }
+        .judge-steps { min-width: 0; }
       }
       @media (max-width: 760px) {
         .shell { grid-template-columns: 1fr; }
@@ -1147,6 +1244,8 @@
         .service-grid { grid-template-columns: 1fr; }
         .audit-table th, .audit-table td { padding: 8px 10px; }
         .audit-table th:nth-child(5), .audit-table td:nth-child(5) { display: none; }
+        .judge-path { padding: 16px; }
+        .judge-actions .btn { width: 100%; }
       }
       @media (max-width: 640px) {
         .brand-text { display: none; }
@@ -1204,6 +1303,24 @@
 
         <!-- =============== ANALYTICS =============== -->
         <section data-view="analytics">
+          <div class="judge-path">
+            <div>
+              <p class="eyebrow">3-minute judge path</p>
+              <h2>Show that Sentinel stops unsafe autonomous execution before it reaches Bitget Agent Hub.</h2>
+              <p>Start with the adversarial call, show the sealed receipt, then back it with the 20-case benchmark and MCP integration surface.</p>
+              <div class="judge-actions">
+                <button class="btn btn-primary" id="startJudgeDemo" type="button">Start demo</button>
+                <button class="btn" data-route="bench" type="button">View 20/20 bench</button>
+                <button class="btn" data-route="mcp" type="button">Show MCP proxy</button>
+              </div>
+            </div>
+            <ol class="judge-steps" aria-label="Recommended demo sequence">
+              <li><span class="num">1</span><span><strong>Run prompt injection</strong>Compromised agent asks for DOGE and 50x leverage.</span></li>
+              <li><span class="num">2</span><span><strong>Run transfer attempt</strong>Unsafe fund movement is blocked and sealed.</span></li>
+              <li><span class="num">3</span><span><strong>Open Bench + MCP</strong>Show 20/20 adversarial coverage and the proxy surface.</span></li>
+            </ol>
+          </div>
+
           <div class="hero-kpis">
             <div class="hero-kpi">
               <div class="row">
@@ -1565,7 +1682,7 @@ export async function guardedToolCall(toolCall, ctx) {
       document.addEventListener("click", (e) => {
         const t = e.target.closest("[data-route]");
         if (!t || t.tagName === "BODY") return;
-        if (t.matches("a[data-route]") || t.matches(".service-card")) {
+        if (t.matches("a[data-route], button[data-route]") || t.matches(".service-card")) {
           e.preventDefault();
           setRoute(t.dataset.route);
         }
@@ -1650,6 +1767,20 @@ export async function guardedToolCall(toolCall, ctx) {
 
       const compilePolicyBtn = document.querySelector("#compilePolicy");
       if (compilePolicyBtn) compilePolicyBtn.addEventListener("click", compilePolicy);
+
+      const startJudgeDemoBtn = document.querySelector("#startJudgeDemo");
+      if (startJudgeDemoBtn) {
+        startJudgeDemoBtn.addEventListener("click", async () => {
+          startJudgeDemoBtn.disabled = true;
+          setRoute("receipts");
+          const injectionButton = document.querySelector('button[data-demo="injection"]');
+          try {
+            if (injectionButton) await runToolCall(injectionButton, "injection");
+          } finally {
+            startJudgeDemoBtn.disabled = false;
+          }
+        });
+      }
 
       loadBenchmark();
       renderCodeCatalog();
