@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" width="1200" height="630">
+  <rect width="1200" height="630" fill="#161B20"/>
+  <rect x="80" y="540" width="180" height="2" fill="#FF5A1F"/>
+  <g transform="translate(80,80)">
+    <rect width="96" height="96" rx="18" fill="#FF5A1F"/>
+    <g fill="#161B20">
+      <rect x="18" y="21"  width="60" height="15" rx="4.5"/>
+      <rect x="18" y="21"  width="15" height="33" rx="4.5"/>
+      <rect x="18" y="42"  width="60" height="15" rx="4.5"/>
+      <rect x="63" y="42"  width="15" height="33" rx="4.5"/>
+      <rect x="18" y="60"  width="60" height="15" rx="4.5"/>
+    </g>
+  </g>
+  <g font-family="IBM Plex Mono, ui-monospace, monospace" fill="#6B7785">
+    <text x="80" y="240" font-size="22" font-weight="500" letter-spacing="3.5">FLIGHT RECORDER · v0.1</text>
+  </g>
+  <g font-family="IBM Plex Sans, system-ui, sans-serif">
+    <text x="80" y="345" font-size="84" font-weight="600" fill="#E8EDF2" letter-spacing="-1.5">Sentinel Flight</text>
+    <text x="80" y="445" font-size="84" font-weight="600" fill="#E8EDF2" letter-spacing="-1.5">Recorder</text>
+  </g>
+  <g font-family="IBM Plex Mono, ui-monospace, monospace">
+    <text x="80" y="580" font-size="22" font-weight="400" fill="#6B7785">Execution-safety control plane for autonomous trading agents.</text>
+  </g>
+  <g font-family="IBM Plex Mono, ui-monospace, monospace" fill="#FF5A1F">
+    <text x="1120" y="80" font-size="14" font-weight="500" text-anchor="end" letter-spacing="2.5">BITGET · HACKATHON</text>
+  </g>
+</svg>

@@ -4,842 +4,1944 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Sentinel Flight Recorder</title>
+    <meta name="description" content="Execution-safety control plane for autonomous Bitget trading agents. Every write-class tool call is deterministically allowed, repaired, or blocked, and sealed into a tamper-evident receipt." />
+    <meta name="theme-color" content="#161B20" />
+
+    <link rel="icon" href="/favicon.ico" sizes="any" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png" />
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16.png" />
+    <link rel="icon" type="image/svg+xml" href="/brand/sentinel-mark-s.svg" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+    <link rel="manifest" href="/site.webmanifest" />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Sentinel Flight Recorder" />
+    <meta property="og:description" content="Execution-safety control plane for autonomous Bitget trading agents." />
+    <meta property="og:image" content="/og.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Sentinel Flight Recorder" />
+    <meta name="twitter:description" content="Execution-safety control plane for autonomous Bitget trading agents." />
+    <meta name="twitter:image" content="/og.png" />
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" />
+
     <style>
       :root {
         color-scheme: dark;
-        font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-        --lime-bg: #d8ea3c;
-        --lime-soft: #efff69;
-        --ink: #0d1014;
-        --ink-2: #11161c;
-        --card: #151a21;
-        --card-2: #10151b;
-        --line: rgba(255, 255, 255, 0.08);
-        --line-strong: rgba(216, 234, 60, 0.35);
-        --text: #effff5;
-        --muted: #87919c;
-        --muted-2: #b5bec7;
-        --green: #10e7a1;
-        --yellow: #e8f34a;
-        --red: #ff6b7a;
-        --blue: #7cc7ff;
-        --shadow: 0 34px 90px rgba(10, 14, 20, 0.34);
+
+        /* ===== Brand tokens ===== */
+        --carbon:   #161B20;
+        --graphite: #2C353F;
+        --steel:    #6B7785;
+        --mist:     #E8EDF2;
+        --signal:   #FF5A1F;
+        --allowed:  #3DD68C;
+        --modified: #F5A623;
+        --blocked:  #E5484D;
+
+        /* Derived surfaces */
+        --surface:    #1C232A;
+        --surface-2:  #232B33;
+        --line:       rgba(255, 255, 255, 0.06);
+        --line-strong:rgba(255, 255, 255, 0.12);
+        --muted-2:    #9AA4B0;
+
+        /* Tinted state backgrounds */
+        --tint-allowed:  rgba(61, 214, 140, 0.10);
+        --tint-modified: rgba(245, 166, 35, 0.12);
+        --tint-blocked:  rgba(229, 72, 77, 0.10);
+        --tint-signal:   rgba(255, 90, 31, 0.08);
+        --tint-signal-strong: rgba(255, 90, 31, 0.22);
+
+        /* ===== Fonts ===== */
+        --font-sans: "IBM Plex Sans", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        --font-mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+
+        /* ===== Type scale (dense control plane) ===== */
+        --t-h1:           clamp(1.75rem, 3vw, 2.5rem);
+        --t-h2:           clamp(1.375rem, 2.4vw, 1.75rem);
+        --t-h3:           1.125rem;
+        --t-eyebrow:      0.6875rem;
+        --t-body:         0.9375rem;
+        --t-small:        0.8125rem;
+        --t-status:       0.75rem;
+        --t-metric:       clamp(1.25rem, 2vw, 1.625rem);
+        --t-metric-label: 0.6875rem;
+        --t-mono-data:    0.8125rem;
+        --t-th:           0.6875rem;
+        --t-td:           0.8125rem;
+        --t-btn:          0.875rem;
+        --t-code:         0.8125rem;
+
+        --shadow: 0 24px 70px rgba(0, 0, 0, 0.55);
       }
 
-      * {
-        box-sizing: border-box;
-      }
-
-      html {
-        scroll-behavior: smooth;
-      }
-
+      * { box-sizing: border-box; }
+      html, body { margin: 0; padding: 0; height: 100%; }
       body {
-        margin: 0;
-        min-height: 100vh;
-        color: var(--text);
-        background:
-          radial-gradient(circle at 20% 10%, rgba(255, 255, 255, 0.32), transparent 18rem),
-          radial-gradient(circle at 86% 0%, rgba(255, 255, 255, 0.22), transparent 18rem),
-          linear-gradient(135deg, var(--lime-soft), var(--lime-bg) 52%, #cddf34);
+        color: var(--mist);
+        background: var(--carbon);
+        font-family: var(--font-sans);
+        font-size: var(--t-body);
+        line-height: 1.55;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+        position: relative;
         overflow-x: hidden;
-      }
-
-      body::before,
-      body::after {
-        content: "";
-        position: fixed;
-        pointer-events: none;
-        border-radius: 50%;
-        opacity: 0.28;
+        min-height: 100vh;
       }
 
       body::before {
-        width: 560px;
-        height: 560px;
-        right: -120px;
-        top: -180px;
-        background: rgba(255, 255, 255, 0.42);
-      }
-
-      body::after {
-        width: 760px;
-        height: 760px;
-        left: -260px;
-        bottom: -440px;
-        background: rgba(255, 255, 255, 0.24);
-      }
-
-      main {
-        width: min(1240px, calc(100% - 34px));
-        margin: 0 auto;
-        padding: 36px 0 60px;
-      }
-
-      .top-strip {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        gap: 14px;
-        margin-bottom: 18px;
-        color: #1e261c;
-      }
-
-      .brand {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        font-weight: 950;
-        letter-spacing: -0.04em;
-      }
-
-      .brand-mark {
-        width: 42px;
-        height: 42px;
-        display: grid;
-        place-items: center;
-        border-radius: 15px;
-        color: #10150e;
-        background: #ffffff;
-        box-shadow: 0 18px 45px rgba(0, 0, 0, 0.16);
-      }
-
-      .external-links {
-        display: flex;
-        gap: 8px;
-        align-items: center;
-      }
-
-      .external-links a {
-        color: #1e261c;
-        text-decoration: none;
-        font-size: 13px;
-        font-weight: 900;
-        border: 1px solid rgba(16, 21, 14, 0.12);
-        background: rgba(255, 255, 255, 0.28);
-        border-radius: 999px;
-        padding: 9px 12px;
-      }
-
-      .app-shell {
-        display: grid;
-        grid-template-columns: 74px 1fr;
-        background: var(--ink);
-        border: 1px solid rgba(255, 255, 255, 0.10);
-        border-radius: 28px;
-        min-height: 720px;
-        box-shadow: var(--shadow);
-        overflow: hidden;
-        position: relative;
-      }
-
-      .app-shell::before {
         content: "";
-        position: absolute;
-        inset: 0;
+        position: fixed;
+        inset: -200px -200px auto -200px;
+        height: 520px;
         pointer-events: none;
         background:
-          radial-gradient(circle at 82% 0%, rgba(16, 231, 161, 0.12), transparent 22rem),
-          radial-gradient(circle at 28% 8%, rgba(232, 243, 74, 0.08), transparent 20rem);
+          radial-gradient(ellipse at 50% 0%, rgba(255, 90, 31, 0.10), transparent 55%),
+          radial-gradient(ellipse at 80% 0%, rgba(255, 90, 31, 0.05), transparent 60%);
+        z-index: 0;
       }
 
-      .sidebar {
+      .shell {
         position: relative;
         z-index: 1;
+        display: grid;
+        grid-template-columns: 232px 1fr;
+        min-height: 100vh;
+      }
+
+      /* ===== Tabular numerics for any live-updating value ===== */
+      .mono, .hash, .codeblock, pre, code, .tabular,
+      .audit-table .mono, .audit-table .hash,
+      .merkle-chip code,
+      .kpi strong, .hero-kpi strong,
+      .scenario-card .hash,
+      .code-catalog .code,
+      .tool-list .name,
+      .verdict,
+      .category-row .count {
+        font-variant-numeric: tabular-nums;
+        font-feature-settings: "tnum";
+      }
+
+      /* ===== Left rail ===== */
+      aside.rail {
+        background: var(--carbon);
+        border-right: 1px solid var(--line);
+        padding: 22px 16px;
         display: grid;
         grid-template-rows: auto 1fr auto;
-        align-items: center;
-        justify-items: center;
-        border-right: 1px solid rgba(255, 255, 255, 0.06);
-        background: #0a0e12;
-        padding: 18px 0;
-      }
-
-      .logo {
-        width: 38px;
-        height: 38px;
-        border-radius: 14px;
-        display: grid;
-        place-items: center;
-        color: #10150e;
-        font-weight: 950;
-        background: linear-gradient(135deg, var(--yellow), var(--green));
-      }
-
-      .rail {
-        display: grid;
         gap: 18px;
+        position: sticky;
+        top: 0;
+        height: 100vh;
       }
 
-      .rail a,
-      .avatar {
-        width: 38px;
-        height: 38px;
-        border-radius: 14px;
-        display: grid;
-        place-items: center;
-        color: #65707a;
-        text-decoration: none;
-        background: transparent;
-        border: 1px solid transparent;
-      }
-
-      .rail a.active,
-      .rail a:hover {
-        color: var(--text);
-        background: #151a21;
-        border-color: var(--line);
-      }
-
-      .avatar {
-        color: #10150e;
-        font-weight: 950;
-        background: linear-gradient(135deg, #ffffff, #c3cfcd);
-      }
-
-      .workspace {
-        position: relative;
-        z-index: 1;
-        padding: 22px;
-      }
-
-      .app-topbar {
-        display: grid;
-        grid-template-columns: 1fr auto;
-        gap: 16px;
-        align-items: center;
-        margin-bottom: 18px;
-      }
-
-      .title-block h1 {
-        margin: 0;
-        font-size: clamp(28px, 4vw, 44px);
-        letter-spacing: -0.06em;
-      }
-
-      .title-block p {
-        margin: 8px 0 0;
-        color: var(--muted);
-        line-height: 1.55;
-        max-width: 720px;
-      }
-
-      .search {
-        min-width: 230px;
-        color: var(--muted);
-        border: 1px solid var(--line);
-        background: #0a0e12;
-        border-radius: 999px;
-        padding: 12px 14px;
-        font-size: 13px;
-      }
-
-      .filters {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 8px;
-        margin-bottom: 18px;
-      }
-
-      .filter,
-      .pill {
-        border: 1px solid var(--line);
-        color: var(--muted-2);
-        background: rgba(255, 255, 255, 0.035);
-        border-radius: 999px;
-        padding: 8px 10px;
-        font-size: 12px;
-        font-weight: 850;
-      }
-
-      .filter.hot,
-      .pill.hot {
-        color: #10150e;
-        background: var(--yellow);
-      }
-
-      .dashboard-grid {
-        display: grid;
-        grid-template-columns: 1.25fr 0.75fr;
-        gap: 16px;
-      }
-
-      .cards-grid {
-        display: grid;
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-        gap: 14px;
-      }
-
-      .bot-card,
-      .panel,
-      .stat-card,
-      .scenario-card {
-        border: 1px solid var(--line);
-        background:
-          radial-gradient(circle at 100% 0%, rgba(16, 231, 161, 0.08), transparent 10rem),
-          var(--card);
-        border-radius: 18px;
-        padding: 15px;
-        box-shadow: 0 14px 45px rgba(0, 0, 0, 0.18);
-      }
-
-      .bot-card {
-        display: grid;
-        gap: 12px;
-        min-height: 238px;
-      }
-
-      .card-head {
-        display: flex;
-        justify-content: space-between;
-        gap: 12px;
-        align-items: start;
-      }
-
-      .asset {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-      }
-
-      .coin {
-        width: 20px;
-        height: 20px;
-        border-radius: 50%;
-        display: grid;
-        place-items: center;
-        font-size: 11px;
-        color: #10150e;
-        font-weight: 950;
-        background: var(--yellow);
-      }
-
-      .asset strong {
-        display: block;
-        font-size: 14px;
-      }
-
-      .asset span,
-      .small {
-        display: block;
-        color: var(--muted);
-        font-size: 12px;
-      }
-
-      .tag {
-        width: max-content;
-        border-radius: 999px;
-        padding: 6px 9px;
-        font-size: 11px;
-        font-weight: 950;
-        text-transform: uppercase;
-      }
-
-      .allow { color: var(--green); background: rgba(16, 231, 161, 0.13); }
-      .modify { color: var(--yellow); background: rgba(232, 243, 74, 0.13); }
-      .block { color: var(--red); background: rgba(255, 107, 122, 0.13); }
-
-      .metric {
-        display: flex;
-        justify-content: space-between;
-        gap: 10px;
-        align-items: end;
-      }
-
-      .metric strong {
-        color: var(--green);
-        font-size: 28px;
-        letter-spacing: -0.05em;
-      }
-
-      .spark {
-        width: 100%;
-        height: 54px;
-      }
-
-      .card-actions {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 8px;
-      }
-
-      .btn {
-        border: 0;
-        border-radius: 10px;
-        min-height: 36px;
-        font-weight: 950;
-        cursor: pointer;
-      }
-
-      .btn-ghost {
-        color: #10150e;
-        background: var(--yellow);
-      }
-
-      .btn-main {
-        color: #06120d;
-        background: var(--green);
-      }
-
-      .side-stack {
-        display: grid;
-        gap: 14px;
-      }
-
-      .stats-grid {
-        display: grid;
-        grid-template-columns: repeat(2, 1fr);
-        gap: 10px;
-      }
-
-      .stat-card strong {
-        display: block;
-        font-size: 26px;
-        letter-spacing: -0.05em;
-      }
-
-      .policy-textarea,
-      pre {
-        width: 100%;
-        border: 1px solid var(--line);
-        background: #0a0e12;
-        color: var(--text);
-        border-radius: 14px;
-        padding: 12px;
-        font: inherit;
-      }
-
-      .policy-textarea {
-        min-height: 122px;
-        resize: vertical;
-      }
-
-      pre {
-        overflow: auto;
-        white-space: pre-wrap;
-        max-height: 330px;
-      }
-
-      .spotlight {
-        border-color: var(--line-strong);
-        background:
-          radial-gradient(circle at 100% 0%, rgba(232, 243, 74, 0.12), transparent 10rem),
-          var(--card-2);
-      }
-
-      .spotlight strong {
-        display: block;
-        font-size: 26px;
-        letter-spacing: -0.05em;
-        margin: 10px 0;
-      }
-
-      .receipt {
-        border-top: 1px solid var(--line);
-        padding-top: 10px;
-        margin-top: 12px;
-      }
-
-      .timeline {
-        display: grid;
-        gap: 8px;
-      }
-
-      .timeline-item {
+      /* ===== Brand lockup ===== */
+      .brand {
         display: grid;
         grid-template-columns: auto 1fr;
         gap: 10px;
-        border: 1px solid var(--line);
-        background: rgba(255, 255, 255, 0.035);
-        border-radius: 14px;
-        padding: 10px;
+        align-items: center;
+        text-decoration: none;
+        color: inherit;
+        padding: 4px 6px;
+        border-radius: 8px;
       }
-
-      .dot {
-        width: 12px;
-        height: 12px;
-        border-radius: 50%;
-        margin-top: 4px;
-        background: var(--green);
-        box-shadow: 0 0 18px rgba(16, 231, 161, 0.62);
+      .brand:hover { background: rgba(255, 255, 255, 0.02); }
+      .brand-mark {
+        width: 28px;
+        height: 28px;
+        display: block;
+        flex-shrink: 0;
       }
-
-      .bench-section {
-        margin-top: 18px;
-      }
-
-      .scenario-grid {
+      .brand-text {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-        gap: 12px;
+        gap: 2px;
+        line-height: 1;
+      }
+      .brand-wordmark {
+        font-family: var(--font-sans);
+        font-weight: 600;
+        font-size: 0.9375rem;
+        color: var(--mist);
+        letter-spacing: 0.04em;
+      }
+      .brand-subline {
+        font-family: var(--font-mono);
+        font-weight: 500;
+        font-size: 0.6875rem;
+        color: var(--steel);
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
       }
 
-      .scenario-card {
-        min-height: 188px;
+      nav.rail-nav {
+        display: grid;
+        gap: 2px;
+        align-content: start;
+      }
+      nav.rail-nav .section-label {
+        font-family: var(--font-mono);
+        font-weight: 500;
+        font-size: var(--t-eyebrow);
+        color: var(--steel);
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        padding: 14px 10px 6px;
+      }
+      nav.rail-nav a {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 9px 10px;
+        border-radius: 8px;
+        color: var(--muted-2);
+        text-decoration: none;
+        font-family: var(--font-sans);
+        font-size: var(--t-small);
+        font-weight: 500;
+        border: 1px solid transparent;
+        cursor: pointer;
+      }
+      nav.rail-nav a:hover {
+        color: var(--mist);
+        background: rgba(255, 255, 255, 0.03);
+      }
+      nav.rail-nav a.active {
+        color: var(--mist);
+        background: var(--tint-signal);
+        border-color: var(--tint-signal-strong);
+      }
+      nav.rail-nav .dot {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: currentColor;
+        opacity: 0.65;
+      }
+      nav.rail-nav .badge {
+        margin-left: auto;
+        font-family: var(--font-mono);
+        font-weight: 600;
+        font-size: 0.625rem;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--allowed);
+        background: var(--tint-allowed);
+        border: 1px solid rgba(61, 214, 140, 0.22);
+        padding: 2px 6px;
+        border-radius: 999px;
+      }
+
+      .rail-bottom {
         display: grid;
         gap: 8px;
       }
+      .rail-bottom .pill {
+        display: flex;
+        justify-content: space-between;
+        padding: 8px 10px;
+        border-radius: 8px;
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid var(--line);
+        color: var(--steel);
+        font-family: var(--font-mono);
+        font-size: 0.6875rem;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+      }
+      .rail-bottom .pill strong { color: var(--signal); font-weight: 600; }
 
-      .scenario-card:hover {
+      /* ===== Main ===== */
+      main.workspace {
+        padding: 26px 30px 60px;
+        min-width: 0;
+      }
+
+      header.topbar {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 18px;
+        align-items: end;
+        margin-bottom: 22px;
+      }
+      .title h1 {
+        margin: 0;
+        font-family: var(--font-sans);
+        font-weight: 600;
+        font-size: var(--t-h1);
+        letter-spacing: -0.01em;
+        line-height: 1.1;
+        color: var(--mist);
+      }
+      .title p {
+        margin: 8px 0 0;
+        color: var(--muted-2);
+        font-family: var(--font-sans);
+        font-size: var(--t-body);
+        line-height: 1.55;
+        max-width: 70ch;
+      }
+
+      .merkle-chip {
+        display: grid;
+        grid-template-columns: auto 1fr auto;
+        gap: 10px;
+        align-items: center;
+        padding: 10px 14px;
+        background: var(--surface);
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        min-width: 320px;
+      }
+      .merkle-chip .label {
+        font-family: var(--font-mono);
+        font-weight: 500;
+        font-size: var(--t-eyebrow);
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: var(--steel);
+      }
+      .merkle-chip code {
+        font-family: var(--font-mono);
+        font-weight: 400;
+        font-size: var(--t-mono-data);
+        color: var(--mist);
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+      .merkle-chip button {
+        border: 1px solid var(--line);
+        background: transparent;
+        color: var(--steel);
+        border-radius: 8px;
+        padding: 5px 8px;
+        cursor: pointer;
+        font-family: var(--font-sans);
+        font-size: 0.6875rem;
+        font-weight: 600;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+      }
+      .merkle-chip button:hover {
+        color: var(--mist);
         border-color: var(--line-strong);
       }
 
-      code {
-        color: var(--green);
-        overflow-wrap: anywhere;
+      /* ===== Panels ===== */
+      .panel {
+        background: var(--surface);
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        padding: 18px;
+      }
+      .panel-head {
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+        margin-bottom: 14px;
+      }
+      .panel-head h3 {
+        margin: 0;
+        font-family: var(--font-sans);
+        font-weight: 600;
+        font-size: var(--t-h3);
+        letter-spacing: -0.005em;
+        color: var(--mist);
+      }
+      .panel-head .small {
+        font-family: var(--font-mono);
+        font-weight: 400;
+        font-size: var(--t-eyebrow);
+        color: var(--steel);
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
       }
 
-      a {
+      /* ===== Hero KPIs ===== */
+      .hero-kpis {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 12px;
+        margin-bottom: 18px;
+      }
+      .hero-kpi {
+        padding: 18px 20px;
+        background: var(--surface);
+        border: 1px solid var(--line);
+        border-radius: 14px;
+        display: grid;
+        gap: 4px;
+      }
+      .hero-kpi .row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+      .hero-kpi .row span:first-child {
+        font-family: var(--font-sans);
+        font-weight: 600;
+        font-size: var(--t-metric-label);
+        color: var(--steel);
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+      }
+      .hero-kpi strong {
+        font-family: var(--font-mono);
+        font-weight: 500;
+        font-size: var(--t-metric);
+        letter-spacing: -0.01em;
+        line-height: 1.05;
+        margin-top: 6px;
+        color: var(--mist);
+      }
+      .delta {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        font-family: var(--font-mono);
+        font-weight: 600;
+        font-size: var(--t-status);
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        padding: 2px 7px;
+        border-radius: 999px;
+        background: var(--tint-allowed);
+        color: var(--allowed);
+      }
+      .delta.block, .delta.blocked { color: var(--blocked); background: var(--tint-blocked); }
+      .delta.modify, .delta.modified { color: var(--modified); background: var(--tint-modified); }
+      .delta.signal { color: var(--signal); background: var(--tint-signal); }
+      .hero-kpi .sub {
+        font-family: var(--font-mono);
+        font-weight: 400;
+        font-size: var(--t-mono-data);
+        color: var(--steel);
+        margin-top: 6px;
+      }
+
+      /* ===== Compact KPIs ===== */
+      .kpis {
+        display: grid;
+        grid-template-columns: repeat(6, minmax(0, 1fr));
+        gap: 10px;
+        margin-bottom: 18px;
+      }
+      .kpi {
+        padding: 14px 16px;
+        background: var(--surface);
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        display: grid;
+        gap: 4px;
+      }
+      .kpi strong {
+        font-family: var(--font-mono);
+        font-weight: 500;
+        font-size: var(--t-metric);
+        letter-spacing: -0.01em;
+        color: var(--mist);
+      }
+      .kpi span {
+        font-family: var(--font-sans);
+        font-weight: 600;
+        font-size: var(--t-metric-label);
+        color: var(--steel);
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+      }
+      .kpi.allow strong { color: var(--allowed); }
+      .kpi.modify strong { color: var(--modified); }
+      .kpi.block strong { color: var(--blocked); }
+
+      /* ===== Charts ===== */
+      .charts-row {
+        display: grid;
+        grid-template-columns: 1.55fr 1fr;
+        gap: 14px;
+        margin-bottom: 18px;
+      }
+
+      /* Stacked verdict-by-category bars */
+      .cat-stack { display: grid; gap: 10px; }
+      .cat-legend {
+        display: flex;
+        gap: 18px;
+        padding-bottom: 12px;
+        margin-bottom: 4px;
+        border-bottom: 1px solid var(--line);
+      }
+      .cat-legend .leg {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        font-family: var(--font-mono);
+        font-weight: 500;
+        font-size: var(--t-status);
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--steel);
+      }
+      .cat-legend .leg::before {
+        content: "";
+        width: 9px;
+        height: 9px;
+        border-radius: 2px;
+      }
+      .cat-legend .leg.block::before { background: var(--blocked); }
+      .cat-legend .leg.modify::before { background: var(--modified); }
+      .cat-legend .leg.allow::before { background: var(--allowed); }
+      .cat-row {
+        display: grid;
+        grid-template-columns: 170px 1fr 38px;
+        gap: 14px;
+        align-items: center;
+      }
+      .cat-row .cat-name {
+        font-family: var(--font-mono);
+        font-weight: 400;
+        font-size: var(--t-mono-data);
+        color: var(--mist);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .cat-row .cat-bar {
+        height: 12px;
+        border-radius: 3px;
+        background: rgba(255, 255, 255, 0.04);
+        display: flex;
+        overflow: hidden;
+        position: relative;
+      }
+      .cat-row .seg {
+        height: 100%;
+        transition: width 0.7s cubic-bezier(0.2, 0.8, 0.2, 1);
+        position: relative;
+      }
+      .cat-row .seg + .seg { box-shadow: inset 1px 0 0 var(--carbon); }
+      .cat-row .seg.block { background: var(--blocked); }
+      .cat-row .seg.modify { background: var(--modified); }
+      .cat-row .seg.allow { background: var(--allowed); }
+      .cat-row .cat-count {
+        font-family: var(--font-mono);
+        font-weight: 500;
+        font-size: var(--t-mono-data);
+        color: var(--mist);
+        text-align: right;
+        font-variant-numeric: tabular-nums;
+      }
+
+      /* Intercept-mix donut */
+      .donut-wrap {
+        position: relative;
+        width: 200px;
+        height: 200px;
+        margin: 4px auto 16px;
+      }
+      .donut {
+        width: 100%;
+        height: 100%;
+        transform: rotate(-90deg);
+        overflow: visible;
+      }
+      .donut-bg {
+        fill: none;
+        stroke: rgba(255, 255, 255, 0.05);
+        stroke-width: 12;
+      }
+      .donut-progress {
+        fill: none;
+        stroke: var(--signal);
+        stroke-width: 12;
+        stroke-linecap: round;
+        stroke-dasharray: 0 100;
+        transition: stroke-dasharray 1.2s cubic-bezier(0.2, 0.8, 0.2, 1);
+        filter: drop-shadow(0 0 6px rgba(255, 90, 31, 0.35));
+      }
+      .donut-center {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        pointer-events: none;
+        line-height: 1;
+        gap: 6px;
+      }
+      .donut-center .num {
+        display: block;
+        margin: 0;
+        padding: 0;
+        font-family: var(--font-mono);
+        font-weight: 500;
+        font-size: 2rem;
+        color: var(--mist);
+        letter-spacing: -0.02em;
+        line-height: 1;
+        font-variant-numeric: tabular-nums;
+      }
+      .donut-center .lbl {
+        display: block;
+        margin: 0;
+        padding: 0;
+        font-family: var(--font-mono);
+        font-weight: 600;
+        font-size: var(--t-status);
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: var(--steel);
+        line-height: 1;
+      }
+      .donut-legend {
+        list-style: none;
+        margin: 0;
+        padding: 14px 0 0;
+        border-top: 1px solid var(--line);
+        display: grid;
+        gap: 9px;
+      }
+      .donut-legend li {
+        display: grid;
+        grid-template-columns: 10px 1fr auto auto;
+        gap: 12px;
+        align-items: center;
+      }
+      .donut-legend .dot {
+        width: 9px;
+        height: 9px;
+        border-radius: 2px;
+      }
+      .donut-legend .dot.block { background: var(--blocked); }
+      .donut-legend .dot.modify { background: var(--modified); }
+      .donut-legend .dot.allow { background: var(--allowed); }
+      .donut-legend .leg-name {
+        font-family: var(--font-mono);
+        font-weight: 500;
+        font-size: var(--t-status);
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--mist);
+      }
+      .donut-legend .leg-val {
+        font-family: var(--font-mono);
+        font-weight: 500;
+        font-size: var(--t-mono-data);
+        color: var(--mist);
+        font-variant-numeric: tabular-nums;
+      }
+      .donut-legend .leg-pct {
+        font-family: var(--font-mono);
+        font-weight: 400;
+        font-size: 0.75rem;
+        color: var(--steel);
+        font-variant-numeric: tabular-nums;
+        min-width: 38px;
+        text-align: right;
+      }
+
+      /* ===== Service health grid ===== */
+      .service-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 12px;
+      }
+      .service-card {
+        padding: 16px;
+        background: var(--surface);
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        display: grid;
+        gap: 10px;
+        text-decoration: none;
         color: inherit;
+        cursor: pointer;
+        transition: border-color 0.2s, transform 0.2s;
+      }
+      .service-card:hover { border-color: var(--line-strong); transform: translateY(-1px); }
+      .service-card .head { display: flex; align-items: center; gap: 10px; }
+      .service-card .glyph {
+        width: 32px;
+        height: 32px;
+        border-radius: 8px;
+        background: var(--tint-signal);
+        border: 1px solid var(--tint-signal-strong);
+        display: grid;
+        place-items: center;
+        font-family: var(--font-mono);
+        font-size: 0.875rem;
+        font-weight: 600;
+        color: var(--signal);
+      }
+      .service-card .head strong {
+        font-family: var(--font-sans);
+        font-weight: 600;
+        font-size: var(--t-body);
+        color: var(--mist);
+      }
+      .service-card .head .status {
+        margin-left: auto;
+        font-family: var(--font-mono);
+        font-weight: 600;
+        font-size: var(--t-status);
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--allowed);
+      }
+      .service-card .metric {
+        font-family: var(--font-mono);
+        font-weight: 500;
+        font-size: var(--t-metric);
+        letter-spacing: -0.01em;
+        color: var(--mist);
+      }
+      .service-card .desc {
+        font-family: var(--font-sans);
+        font-size: var(--t-small);
+        color: var(--muted-2);
+        line-height: 1.5;
+      }
+      .service-card .foot {
+        font-family: var(--font-mono);
+        font-weight: 500;
+        font-size: var(--t-eyebrow);
+        color: var(--steel);
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
       }
 
-      @media (max-width: 1100px) {
-        .dashboard-grid {
-          grid-template-columns: 1fr;
-        }
+      /* ===== Receipts layout ===== */
+      .layout {
+        display: grid;
+        grid-template-columns: 1.55fr 1fr;
+        gap: 18px;
       }
 
-      @media (max-width: 840px) {
-        main {
-          width: min(100% - 22px, 1240px);
-          padding-top: 18px;
-        }
+      .trigger-strip {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        align-items: center;
+        padding: 12px 14px;
+        background: var(--surface);
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        margin-bottom: 12px;
+      }
+      .trigger-strip .label {
+        font-family: var(--font-mono);
+        font-weight: 500;
+        font-size: var(--t-eyebrow);
+        color: var(--steel);
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        margin-right: 6px;
+      }
+      .chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        border: 1px solid var(--line);
+        background: rgba(255, 255, 255, 0.02);
+        color: var(--mist);
+        padding: 7px 12px;
+        border-radius: 999px;
+        font-family: var(--font-sans);
+        font-size: var(--t-small);
+        font-weight: 600;
+        cursor: pointer;
+        transition: border-color 0.15s, background 0.15s;
+      }
+      .chip::before {
+        content: "";
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        background: var(--steel);
+      }
+      .chip.allow::before { background: var(--allowed); box-shadow: 0 0 8px rgba(61, 214, 140, 0.6); }
+      .chip.modify::before { background: var(--modified); box-shadow: 0 0 8px rgba(245, 166, 35, 0.6); }
+      .chip.block::before { background: var(--blocked); box-shadow: 0 0 8px rgba(229, 72, 77, 0.5); }
+      .chip:hover { border-color: var(--line-strong); background: rgba(255, 255, 255, 0.05); }
+      .chip:disabled { opacity: 0.5; cursor: progress; }
 
-        .external-links {
-          display: none;
-        }
+      /* ===== Audit log ===== */
+      .audit-log {
+        background: var(--surface);
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        overflow: hidden;
+      }
+      .audit-head {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 14px 16px;
+        border-bottom: 1px solid var(--line);
+      }
+      .audit-head h3 {
+        margin: 0;
+        font-family: var(--font-sans);
+        font-weight: 600;
+        font-size: var(--t-h3);
+        color: var(--mist);
+      }
+      .audit-head .live {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font-family: var(--font-mono);
+        font-weight: 500;
+        font-size: var(--t-status);
+        color: var(--steel);
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+      }
+      .audit-head .live::before {
+        content: "";
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        background: var(--allowed);
+        box-shadow: 0 0 10px rgba(61, 214, 140, 0.8);
+        animation: pulse 1.6s ease-in-out infinite;
+      }
+      @keyframes pulse { 50% { opacity: 0.35; } }
 
-        .app-shell {
-          grid-template-columns: 1fr;
-        }
+      .audit-table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+      .audit-table th, .audit-table td {
+        padding: 11px 16px;
+        text-align: left;
+        border-bottom: 1px solid var(--line);
+        vertical-align: top;
+      }
+      .audit-table th {
+        font-family: var(--font-sans);
+        font-weight: 600;
+        font-size: var(--t-th);
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--steel);
+        background: rgba(0, 0, 0, 0.2);
+      }
+      .audit-table tbody tr:last-child td { border-bottom: 0; }
+      .audit-table tbody tr.empty td {
+        color: var(--steel);
+        font-style: italic;
+        text-align: center;
+        padding: 36px 16px;
+        font-family: var(--font-sans);
+        font-size: var(--t-small);
+      }
+      .audit-table .mono {
+        font-family: var(--font-mono);
+        font-weight: 400;
+        font-size: var(--t-td);
+        color: var(--muted-2);
+      }
+      .audit-table .tool {
+        font-family: var(--font-sans);
+        font-weight: 600;
+        font-size: var(--t-td);
+        color: var(--mist);
+      }
+      .audit-table .reasons {
+        font-family: var(--font-sans);
+        font-size: var(--t-small);
+        color: var(--muted-2);
+        line-height: 1.5;
+        max-width: 340px;
+      }
+      .audit-table .hash {
+        font-family: var(--font-mono);
+        font-weight: 400;
+        font-size: 0.6875rem;
+        color: var(--mist);
+      }
+      .audit-table tr.flash { animation: flash 0.5s ease; }
+      @keyframes flash {
+        from { background: rgba(255, 90, 31, 0.07); }
+        to   { background: transparent; }
+      }
 
-        .sidebar {
-          display: none;
-        }
+      /* Gate glyph inline next to verdict pills */
+      .gate-glyph {
+        width: 14px;
+        height: 14px;
+        vertical-align: -2px;
+        margin-right: 6px;
+        flex-shrink: 0;
+      }
 
-        .app-topbar {
-          grid-template-columns: 1fr;
-        }
+      .verdict {
+        display: inline-flex;
+        align-items: center;
+        padding: 4px 9px;
+        border-radius: 999px;
+        font-family: var(--font-mono);
+        font-weight: 600;
+        font-size: var(--t-status);
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+      }
+      .verdict.allow { color: var(--allowed); background: var(--tint-allowed); }
+      .verdict.modify { color: var(--modified); background: var(--tint-modified); }
+      .verdict.block { color: var(--blocked); background: var(--tint-blocked); }
 
-        .cards-grid,
-        .stats-grid {
-          grid-template-columns: 1fr;
-        }
+      /* ===== Bench grid ===== */
+      .bench-section { margin-top: 22px; }
+      .scenario-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 10px;
+      }
+      .scenario-card {
+        background: var(--surface);
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        padding: 12px;
+        display: grid;
+        gap: 6px;
+      }
+      .scenario-card .scenario-head {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+      .scenario-card strong {
+        font-family: var(--font-sans);
+        font-weight: 600;
+        font-size: var(--t-small);
+        color: var(--mist);
+      }
+      .scenario-card .small {
+        font-family: var(--font-sans);
+        font-size: 0.75rem;
+        color: var(--muted-2);
+        line-height: 1.5;
+      }
+      .scenario-card .hash {
+        font-family: var(--font-mono);
+        font-weight: 400;
+        font-size: 0.625rem;
+        color: var(--steel);
+        word-break: break-all;
+      }
+
+      /* ===== Side column / panels ===== */
+      .side-col { display: grid; gap: 14px; align-content: start; }
+
+      .policy-textarea {
+        width: 100%;
+        min-height: 110px;
+        padding: 12px;
+        border-radius: 10px;
+        background: var(--carbon);
+        border: 1px solid var(--line);
+        color: var(--mist);
+        font-family: var(--font-mono);
+        font-weight: 400;
+        font-size: var(--t-mono-data);
+        line-height: 1.55;
+        resize: vertical;
+      }
+      .btn {
+        border: 0;
+        border-radius: 10px;
+        padding: 10px 14px;
+        font-family: var(--font-sans);
+        font-weight: 600;
+        font-size: var(--t-btn);
+        letter-spacing: 0.01em;
+        cursor: pointer;
+      }
+      .btn-primary {
+        margin-top: 10px;
+        width: 100%;
+        color: var(--carbon);
+        background: var(--signal);
+      }
+      .btn-primary:hover { filter: brightness(1.07); }
+
+      pre {
+        margin: 12px 0 0;
+        padding: 12px;
+        background: var(--carbon);
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        font-family: var(--font-mono);
+        font-weight: 400;
+        font-size: var(--t-code);
+        color: var(--muted-2);
+        white-space: pre-wrap;
+        line-height: 1.5;
+        max-height: 220px;
+        overflow: auto;
+      }
+
+      .spotlight-body { display: grid; gap: 8px; }
+      .spotlight-body strong {
+        font-family: var(--font-sans);
+        font-weight: 600;
+        font-size: 1rem;
+        color: var(--mist);
+      }
+      .spotlight-body .small {
+        font-family: var(--font-sans);
+        font-size: var(--t-small);
+        color: var(--muted-2);
+        line-height: 1.55;
+      }
+      .spotlight-body .hash {
+        font-family: var(--font-mono);
+        font-weight: 400;
+        font-size: var(--t-mono-data);
+        color: var(--mist);
+        padding-top: 10px;
+        margin-top: 4px;
+        border-top: 1px solid var(--line);
+        word-break: break-all;
+      }
+
+      /* ===== Docs layout ===== */
+      .docs {
+        display: grid;
+        grid-template-columns: 1.4fr 1fr;
+        gap: 14px;
+      }
+      .docs .panel h3 { margin-top: 0; }
+      .docs .panel p {
+        color: var(--muted-2);
+        font-family: var(--font-sans);
+        font-size: var(--t-small);
+        line-height: 1.65;
+        margin: 0 0 10px;
+        max-width: 70ch;
+      }
+      .docs code {
+        font-family: var(--font-mono);
+        font-size: var(--t-mono-data);
+        color: var(--signal);
+      }
+      .codeblock {
+        display: block;
+        background: var(--carbon);
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        padding: 12px;
+        white-space: pre-wrap;
+        word-break: break-word;
+        color: var(--muted-2);
+        font-family: var(--font-mono);
+        font-weight: 400;
+        font-size: var(--t-code);
+        line-height: 1.6;
+      }
+      .codeblock .k { color: var(--signal); }
+
+      .tool-list {
+        display: grid;
+        gap: 8px;
+        margin: 0;
+        padding: 0;
+        list-style: none;
+      }
+      .tool-list li {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 8px;
+        padding: 10px 12px;
+        background: var(--carbon);
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        align-items: center;
+      }
+      .tool-list .name {
+        font-family: var(--font-mono);
+        font-weight: 400;
+        font-size: var(--t-mono-data);
+        color: var(--mist);
+      }
+      .tool-list .tag {
+        font-family: var(--font-mono);
+        font-weight: 600;
+        font-size: var(--t-status);
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        padding: 3px 8px;
+        border-radius: 999px;
+      }
+      .tool-list .tag.guarded { color: var(--blocked); background: var(--tint-blocked); }
+      .tool-list .tag.passthrough { color: var(--steel); background: rgba(255, 255, 255, 0.04); }
+
+      .code-catalog {
+        display: grid;
+        gap: 6px;
+        list-style: none;
+        margin: 0;
+        padding: 0;
+      }
+      .code-catalog li {
+        padding: 10px 12px;
+        background: var(--carbon);
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        display: grid;
+        grid-template-columns: 200px 1fr;
+        gap: 12px;
+        align-items: baseline;
+      }
+      .code-catalog .code {
+        font-family: var(--font-mono);
+        font-weight: 500;
+        font-size: 0.6875rem;
+        color: var(--blocked);
+        letter-spacing: 0.02em;
+      }
+      .code-catalog .desc {
+        font-family: var(--font-sans);
+        font-size: var(--t-small);
+        color: var(--muted-2);
+        line-height: 1.5;
+      }
+
+      /* ===== View routing ===== */
+      [data-view] { display: none; }
+      body[data-route="analytics"] [data-view="analytics"],
+      body[data-route="receipts"] [data-view="receipts"],
+      body[data-route="policy"] [data-view="policy"],
+      body[data-route="bench"] [data-view="bench"],
+      body[data-route="mcp"] [data-view="mcp"],
+      body[data-route="agent-hub"] [data-view="agent-hub"],
+      body[data-route="github"] [data-view="github"] { display: block; }
+
+      /* ===== Responsive ===== */
+      @media (max-width: 1180px) {
+        .layout, .charts-row, .docs { grid-template-columns: 1fr; }
+        .kpis { grid-template-columns: repeat(3, 1fr); }
+        .hero-kpis { grid-template-columns: 1fr; }
+        .service-grid { grid-template-columns: repeat(2, 1fr); }
+        .code-catalog li { grid-template-columns: 1fr; }
+      }
+      @media (max-width: 760px) {
+        .shell { grid-template-columns: 1fr; }
+        aside.rail { position: static; height: auto; grid-template-rows: auto; }
+        nav.rail-nav { display: none; }
+        .rail-bottom { display: none; }
+        main.workspace { padding: 18px; }
+        header.topbar { grid-template-columns: 1fr; }
+        .merkle-chip { min-width: 0; }
+        .kpis { grid-template-columns: repeat(2, 1fr); }
+        .service-grid { grid-template-columns: 1fr; }
+        .audit-table th, .audit-table td { padding: 8px 10px; }
+        .audit-table th:nth-child(5), .audit-table td:nth-child(5) { display: none; }
+      }
+      @media (max-width: 640px) {
+        .brand-text { display: none; }
       }
     </style>
   </head>
-  <body>
-    <main>
-      <div class="top-strip">
-        <div class="brand">
-          <span class="brand-mark">S</span>
-          <span>Sentinel Flight Recorder</span>
+  <body data-route="analytics">
+    <div class="shell">
+      <aside class="rail">
+        <a class="brand" href="#analytics" aria-label="Sentinel home — Analytics">
+          <svg class="brand-mark" viewBox="0 0 32 32" aria-hidden="true">
+            <rect width="32" height="32" rx="6" fill="#FF5A1F"/>
+            <g fill="#161B20">
+              <rect x="6"  y="7"  width="20" height="5" rx="1.5"/>
+              <rect x="6"  y="7"  width="5"  height="11" rx="1.5"/>
+              <rect x="6"  y="14" width="20" height="5" rx="1.5"/>
+              <rect x="21" y="14" width="5"  height="11" rx="1.5"/>
+              <rect x="6"  y="20" width="20" height="5" rx="1.5"/>
+            </g>
+          </svg>
+          <span class="brand-text">
+            <span class="brand-wordmark">SENTINEL</span>
+            <span class="brand-subline">Flight Recorder</span>
+          </span>
+        </a>
+        <nav class="rail-nav" id="railNav">
+          <span class="section-label">Overview</span>
+          <a data-route="analytics"><span class="dot"></span>Analytics<span class="badge">live</span></a>
+          <span class="section-label">Services</span>
+          <a data-route="receipts"><span class="dot"></span>Receipts</a>
+          <a data-route="policy"><span class="dot"></span>Policy</a>
+          <a data-route="bench"><span class="dot"></span>Bench</a>
+          <a data-route="mcp"><span class="dot"></span>MCP Proxy</a>
+          <a data-route="agent-hub"><span class="dot"></span>Agent Hub</a>
+          <a data-route="github"><span class="dot"></span>GitHub</a>
+        </nav>
+        <div class="rail-bottom">
+          <div class="pill"><span>Mode</span><strong>Paper</strong></div>
+          <div class="pill"><span>Track</span><strong>2 · Infra</strong></div>
         </div>
-        <div class="external-links">
-          <a href="https://github.com/dmetagame/sentinel-flight-recorder">GitHub</a>
-          <a href="#bench">Sentinel Bench</a>
-          <a href="#guard">Run Guard</a>
-        </div>
-      </div>
+      </aside>
 
-      <section class="app-shell">
-        <aside class="sidebar">
-          <div class="logo">S</div>
-          <div class="rail">
-            <a class="active" href="#guard">G</a>
-            <a href="#bench">B</a>
-            <a href="https://github.com/dmetagame/sentinel-flight-recorder">GH</a>
+      <main class="workspace">
+        <header class="topbar">
+          <div class="title">
+            <h1 id="pageTitle">Analytics</h1>
+            <p id="pageSub">A unified view of every Sentinel service &mdash; receipts written, policy compiled, bench coverage, and the agent surface guarded by the gate.</p>
           </div>
-          <div class="avatar">AI</div>
-        </aside>
+          <div class="merkle-chip" title="Merkle root of the latest Sentinel Bench run">
+            <span class="label">Merkle</span>
+            <code id="merkleRoot">computing…</code>
+            <button id="copyMerkle" type="button" aria-label="Copy Merkle root">copy</button>
+          </div>
+        </header>
 
-        <div class="workspace">
-          <div class="app-topbar">
-            <div class="title-block">
-              <h1>AI Trading Safety</h1>
-              <p>Sentinel sits before Bitget Agent Hub and turns every autonomous execution request into an audited allow, repair, or block decision.</p>
+        <!-- =============== ANALYTICS =============== -->
+        <section data-view="analytics">
+          <div class="hero-kpis">
+            <div class="hero-kpi">
+              <div class="row">
+                <span>Bench pass rate</span>
+                <span class="delta" id="heroDeltaPass">+100%</span>
+              </div>
+              <strong id="heroPass">—</strong>
+              <span class="sub" id="heroPassSub">20 adversarial scenarios sealed</span>
             </div>
-            <div class="search">Search: BTCUSDT, policy, receipt...</div>
+            <div class="hero-kpi">
+              <div class="row">
+                <span>Sealed receipts</span>
+                <span class="delta signal" id="heroDeltaReceipts">Merkle</span>
+              </div>
+              <strong id="heroReceipts">—</strong>
+              <span class="sub" id="heroReceiptsSub">root computing…</span>
+            </div>
+            <div class="hero-kpi">
+              <div class="row">
+                <span>Violations caught</span>
+                <span class="delta blocked" id="heroDeltaViolations">harmful intents</span>
+              </div>
+              <strong id="heroViolations">—</strong>
+              <span class="sub" id="heroViolationsSub">block + repair verdicts</span>
+            </div>
           </div>
 
-          <div class="filters">
-            <span class="filter hot">All tool calls</span>
-            <span class="filter">Runtime AI</span>
-            <span class="filter">Receipts: live</span>
-            <span class="filter">Risk budget</span>
-            <span class="filter">Sort by: Threat</span>
+          <div class="charts-row">
+            <div class="panel">
+              <div class="panel-head">
+                <h3>Verdict composition by category</h3>
+                <span class="small" id="distMeta">attack surface · sorted by severity</span>
+              </div>
+              <div class="cat-legend">
+                <span class="leg block">Block</span>
+                <span class="leg modify">Modify</span>
+                <span class="leg allow">Allow</span>
+              </div>
+              <div class="cat-stack" id="catStack"></div>
+            </div>
+            <div class="panel">
+              <div class="panel-head">
+                <h3>Intercept mix</h3>
+                <span class="small">verdict ratio</span>
+              </div>
+              <div class="donut-wrap">
+                <svg class="donut" viewBox="0 0 100 100" aria-hidden="true">
+                  <circle class="donut-bg" cx="50" cy="50" r="40"/>
+                  <circle class="donut-progress" id="donutProgress" cx="50" cy="50" r="40" pathLength="100"/>
+                </svg>
+                <div class="donut-center">
+                  <span class="num" id="donutCenter">—</span>
+                  <span class="lbl">Intercepted</span>
+                </div>
+              </div>
+              <ul class="donut-legend">
+                <li><span class="dot block"></span><span class="leg-name">Block</span><span class="leg-val" id="legBlock">—</span><span class="leg-pct" id="pctBlock">—</span></li>
+                <li><span class="dot modify"></span><span class="leg-name">Modify</span><span class="leg-val" id="legModify">—</span><span class="leg-pct" id="pctModify">—</span></li>
+                <li><span class="dot allow"></span><span class="leg-name">Allow</span><span class="leg-val" id="legAllow">—</span><span class="leg-pct" id="pctAllow">—</span></li>
+              </ul>
+            </div>
           </div>
 
-          <div class="dashboard-grid" id="guard">
+          <div class="panel" style="margin-bottom: 18px;">
+            <div class="panel-head">
+              <h3>Service health</h3>
+              <span class="small">drill in</span>
+            </div>
+            <div class="service-grid" id="serviceGrid">
+              <a class="service-card" data-route="receipts">
+                <div class="head"><span class="glyph">R</span><strong>Receipts</strong><span class="status">live</span></div>
+                <div class="metric" id="svcReceipts">—</div>
+                <div class="desc">Sealed flight receipts with intent, decision, and execution hashes.</div>
+                <div class="foot">stream &rsaquo;</div>
+              </a>
+              <a class="service-card" data-route="policy">
+                <div class="head"><span class="glyph">P</span><strong>Policy</strong><span class="status">default</span></div>
+                <div class="metric">1% · 5x</div>
+                <div class="desc">Per-trade risk, leverage, daily loss, stop-loss &mdash; compiled deterministically.</div>
+                <div class="foot">mandate &rsaquo;</div>
+              </a>
+              <a class="service-card" data-route="bench">
+                <div class="head"><span class="glyph">B</span><strong>Bench</strong><span class="status" id="svcBenchStatus">—</span></div>
+                <div class="metric" id="svcBench">—</div>
+                <div class="desc">Deterministic adversarial test suite with Merkle-sealed receipts.</div>
+                <div class="foot">scenarios &rsaquo;</div>
+              </a>
+              <a class="service-card" data-route="mcp">
+                <div class="head"><span class="glyph">M</span><strong>MCP Proxy</strong><span class="status">stdio</span></div>
+                <div class="metric">7 tools</div>
+                <div class="desc">Stdio JSON-RPC server that intercepts every write call before Agent Hub.</div>
+                <div class="foot">surface &rsaquo;</div>
+              </a>
+              <a class="service-card" data-route="agent-hub">
+                <div class="head"><span class="glyph">A</span><strong>Agent Hub</strong><span class="status">bitget</span></div>
+                <div class="metric">5 skills</div>
+                <div class="desc">Perception skills (read-through) and execution tools (guarded).</div>
+                <div class="foot">tools &rsaquo;</div>
+              </a>
+              <a class="service-card" data-route="github">
+                <div class="head"><span class="glyph">G</span><strong>GitHub</strong><span class="status">main</span></div>
+                <div class="metric">CI green</div>
+                <div class="desc">Public repo, CI pipeline, and Vercel deployment of the dashboard.</div>
+                <div class="foot">repo &rsaquo;</div>
+              </a>
+            </div>
+          </div>
+
+          <div class="panel">
+            <div class="panel-head">
+              <h3>Recent receipts</h3>
+              <span class="small">latest bench run</span>
+            </div>
+            <table class="audit-table">
+              <thead>
+                <tr><th>Scenario</th><th>Tool</th><th>Symbol</th><th>Verdict</th><th>Receipt</th></tr>
+              </thead>
+              <tbody id="analyticsRecent">
+                <tr class="empty"><td colspan="5">loading…</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- =============== RECEIPTS =============== -->
+        <section data-view="receipts">
+          <section class="kpis">
+            <div class="kpi"><strong id="kpiBench">—</strong><span>Bench pass</span></div>
+            <div class="kpi block"><strong id="kpiBlocked">—</strong><span>Blocked</span></div>
+            <div class="kpi modify"><strong id="kpiRepaired">—</strong><span>Repaired</span></div>
+            <div class="kpi allow"><strong id="kpiAllowed">—</strong><span>Allowed</span></div>
+            <div class="kpi"><strong id="kpiPolicy">Default</strong><span>Active policy</span></div>
+            <div class="kpi"><strong>Paper</strong><span>Execution mode</span></div>
+          </section>
+
+          <section class="layout">
             <div>
-              <div class="cards-grid">
-                <article class="bot-card">
-                  <div class="card-head">
-                    <div class="asset"><span class="coin">B</span><div><strong>BTCUSDT Perp</strong><span>Safe execution intent</span></div></div>
-                    <span class="tag allow">allow</span>
-                  </div>
-                  <div class="metric"><strong>0.4%</strong><span class="small">risk budget used</span></div>
-                  <svg class="spark" viewBox="0 0 280 64"><path d="M0 40 C28 30 42 18 68 26 C98 36 112 12 138 18 C172 25 184 42 214 28 C238 18 252 25 280 16" fill="none" stroke="#10e7a1" stroke-width="4" stroke-linecap="round"/></svg>
-                  <div class="card-actions"><button class="btn btn-ghost" data-demo="safe">Inspect</button><button class="btn btn-main" data-demo="safe">Run Guard</button></div>
-                </article>
-
-                <article class="bot-card">
-                  <div class="card-head">
-                    <div class="asset"><span class="coin">E</span><div><strong>ETHUSDT Perp</strong><span>Missing stop repair</span></div></div>
-                    <span class="tag modify">modify</span>
-                  </div>
-                  <div class="metric"><strong>1 fix</strong><span class="small">stop loss attached</span></div>
-                  <svg class="spark" viewBox="0 0 280 64"><path d="M0 28 C28 38 44 42 68 34 C92 27 110 18 136 31 C160 43 178 39 204 28 C232 17 250 20 280 34" fill="none" stroke="#e8f34a" stroke-width="4" stroke-linecap="round"/></svg>
-                  <div class="card-actions"><button class="btn btn-ghost" data-demo="missingStop">Inspect</button><button class="btn btn-main" data-demo="missingStop">Run Guard</button></div>
-                </article>
-
-                <article class="bot-card">
-                  <div class="card-head">
-                    <div class="asset"><span class="coin">P</span><div><strong>Prompt Injection</strong><span>50x + unsupported symbol</span></div></div>
-                    <span class="tag block">block</span>
-                  </div>
-                  <div class="metric"><strong>50x</strong><span class="small">leverage rejected</span></div>
-                  <svg class="spark" viewBox="0 0 280 64"><path d="M0 20 C24 17 38 44 66 42 C94 39 105 16 132 18 C164 20 170 48 204 45 C234 42 248 18 280 25" fill="none" stroke="#ff6b7a" stroke-width="4" stroke-linecap="round"/></svg>
-                  <div class="card-actions"><button class="btn btn-ghost" data-demo="injection">Inspect</button><button class="btn btn-main" data-demo="injection">Run Guard</button></div>
-                </article>
-
-                <article class="bot-card">
-                  <div class="card-head">
-                    <div class="asset"><span class="coin">T</span><div><strong>Transfer Tool</strong><span>Fund movement attempt</span></div></div>
-                    <span class="tag block">block</span>
-                  </div>
-                  <div class="metric"><strong>$1k</strong><span class="small">transfer prevented</span></div>
-                  <svg class="spark" viewBox="0 0 280 64"><path d="M0 24 C24 24 34 32 58 34 C90 38 104 42 132 30 C164 18 178 17 206 25 C238 34 254 18 280 20" fill="none" stroke="#10e7a1" stroke-width="4" stroke-linecap="round"/></svg>
-                  <div class="card-actions"><button class="btn btn-ghost" data-demo="transfer">Inspect</button><button class="btn btn-main" data-demo="transfer">Run Guard</button></div>
-                </article>
+              <div class="trigger-strip">
+                <span class="label">Send a Bitget Agent Hub call through Sentinel:</span>
+                <button class="chip allow" data-demo="safe">Safe BTC trade</button>
+                <button class="chip modify" data-demo="missingStop">Missing stop loss</button>
+                <button class="chip block" data-demo="injection">Prompt injection · 50x</button>
+                <button class="chip block" data-demo="transfer">Transfer attempt</button>
               </div>
-
-              <section class="bench-section" id="bench">
-                <div class="filters">
-                  <span class="pill hot">Sentinel Bench</span>
-                  <span class="pill">20 adversarial cases</span>
-                  <span class="pill">Merkle receipts</span>
+              <div class="audit-log">
+                <div class="audit-head">
+                  <h3>Receipt stream</h3>
+                  <span class="live">live</span>
                 </div>
-                <div class="scenario-grid" id="scenarios"></div>
-              </section>
+                <table class="audit-table">
+                  <thead>
+                    <tr><th>Time</th><th>Tool</th><th>Symbol</th><th>Verdict</th><th>Reason</th><th>Receipt</th></tr>
+                  </thead>
+                  <tbody id="auditBody">
+                    <tr class="empty"><td colspan="6">Click a trigger above to send an audited tool call through the Sentinel gate.</td></tr>
+                  </tbody>
+                </table>
+              </div>
             </div>
-
-            <aside class="side-stack">
-              <div class="stats-grid" id="summary"></div>
-
+            <aside class="side-col">
               <div class="panel">
-                <h3>Natural-language risk mandate</h3>
-                <textarea class="policy-textarea" id="policyText">Trade BTC and ETH only. Risk at most 1% per position. Use maximum 5x leverage. Stop trading after losing 3% daily. Require stop loss.</textarea>
-                <button class="btn btn-main" id="compilePolicy">Compile Policy</button>
-                <pre id="policyResult">Click Compile Policy.</pre>
-              </div>
-
-              <div class="panel spotlight" id="spotlight">
-                <span class="tag allow">ready</span>
-                <strong>No tool call yet</strong>
-                <span class="small">Run a guard card to watch Sentinel allow, repair, or block the execution call.</span>
-                <div class="receipt small"><code>receipt hash pending</code></div>
-              </div>
-
-              <div class="panel">
-                <h3>Latest receipt</h3>
-                <pre id="receiptResult">Run a guarded tool call.</pre>
-              </div>
-
-              <div class="panel">
-                <h3>Agent intent timeline</h3>
-                <div class="timeline" id="timeline">
-                  <div class="timeline-item">
-                    <span class="dot"></span>
-                    <div>
-                      <strong>Ready</strong>
-                      <span class="small">Choose a guard card to send a Bitget Agent Hub-style call through Sentinel.</span>
-                    </div>
-                  </div>
+                <div class="panel-head"><h3>Spotlight</h3></div>
+                <div class="spotlight-body" id="spotlight">
+                  <span class="verdict allow">ready</span>
+                  <strong>Awaiting first guarded call</strong>
+                  <span class="small">Choose a trigger to watch Sentinel reason about the intent in real time.</span>
+                  <code class="hash">receipt pending</code>
                 </div>
+              </div>
+              <div class="panel">
+                <div class="panel-head"><h3>How it works</h3></div>
+                <p style="margin:0; font-family: var(--font-sans); font-size: var(--t-small); color: var(--muted-2); line-height: 1.65;">
+                  Each click POSTs a Bitget tool call to <code style="font-family: var(--font-mono); color: var(--signal);">/api/tool-call</code>.
+                  Sentinel deterministically evaluates the intent, applies the policy, and seals a tamper-evident receipt.
+                  The verdict, reasons, and receipt hash are appended to the stream above.
+                </p>
               </div>
             </aside>
+          </section>
+        </section>
+
+        <!-- =============== POLICY =============== -->
+        <section data-view="policy">
+          <div class="docs">
+            <div class="panel">
+              <div class="panel-head"><h3>Active mandate</h3></div>
+              <p>Describe the agent's mandate in natural language. Sentinel compiles it via Qwen (with a deterministic regex fallback) into a frozen policy object.</p>
+              <textarea class="policy-textarea" id="policyText">Trade BTC and ETH only. Risk at most 1% per position. Use maximum 5x leverage. Stop trading after losing 3% daily. Require stop loss.</textarea>
+              <button class="btn btn-primary" id="compilePolicy">Compile policy</button>
+              <pre id="policyResult">Compile the mandate to see the deterministic policy that the gate will enforce.</pre>
+            </div>
+            <div class="panel">
+              <div class="panel-head"><h3>Violation catalog</h3></div>
+              <p>Every code below is a structured reason the gate can emit. Receipts carry the codes verbatim so reviewers can replay decisions.</p>
+              <ul class="code-catalog" id="codeCatalog"></ul>
+            </div>
           </div>
-        </div>
-      </section>
-    </main>
+        </section>
+
+        <!-- =============== BENCH =============== -->
+        <section data-view="bench">
+          <section class="kpis">
+            <div class="kpi"><strong id="kpiBench2">—</strong><span>Total pass</span></div>
+            <div class="kpi block"><strong id="kpiBlocked2">—</strong><span>Blocked</span></div>
+            <div class="kpi modify"><strong id="kpiRepaired2">—</strong><span>Repaired</span></div>
+            <div class="kpi allow"><strong id="kpiAllowed2">—</strong><span>Allowed</span></div>
+            <div class="kpi"><strong id="kpiCategories">—</strong><span>Categories</span></div>
+            <div class="kpi"><strong id="kpiPassPct">—</strong><span>Pass rate</span></div>
+          </section>
+          <section class="bench-section">
+            <div class="panel-head" style="margin-bottom: 12px;">
+              <h3>Adversarial scenarios</h3>
+              <span class="small" id="benchMeta">20 cases · deterministic Merkle root</span>
+            </div>
+            <div class="scenario-grid" id="scenarios"></div>
+          </section>
+        </section>
+
+        <!-- =============== MCP PROXY =============== -->
+        <section data-view="mcp">
+          <div class="docs">
+            <div class="panel">
+              <div class="panel-head"><h3>Stdio JSON-RPC proxy</h3></div>
+              <p>The Sentinel MCP proxy wraps Bitget Agent Hub over stdio. Every <code>tools/call</code> for a write-class tool is intercepted, evaluated by the gate, and either passed through to Agent Hub, repaired before forwarding, or blocked with a receipt.</p>
+              <p>Tools that mutate state (orders, leverage, transfers, withdrawals) are routed through the gate. Read-only perception skills pass through transparently.</p>
+              <span class="codeblock"><span class="k">$</span> npm run mcp:proxy
+
+[Sentinel] MCP proxy listening on stdio
+[Sentinel] Bitget Agent Hub: upstream connected
+[Sentinel] Guarding 7 write tools</span>
+            </div>
+            <div class="panel">
+              <div class="panel-head"><h3>Surface</h3></div>
+              <p>Tools currently routed through the Sentinel gate:</p>
+              <ul class="tool-list">
+                <li><span class="name">futures_place_order</span><span class="tag guarded">guarded</span></li>
+                <li><span class="name">futures_modify_order</span><span class="tag guarded">guarded</span></li>
+                <li><span class="name">futures_cancel_order</span><span class="tag guarded">guarded</span></li>
+                <li><span class="name">futures_set_leverage</span><span class="tag guarded">guarded</span></li>
+                <li><span class="name">spot_place_order</span><span class="tag guarded">guarded</span></li>
+                <li><span class="name">account_transfer</span><span class="tag guarded">guarded</span></li>
+                <li><span class="name">withdraw</span><span class="tag guarded">guarded</span></li>
+                <li><span class="name">market_data_*</span><span class="tag passthrough">passthrough</span></li>
+                <li><span class="name">account_balance</span><span class="tag passthrough">passthrough</span></li>
+              </ul>
+            </div>
+          </div>
+        </section>
+
+        <!-- =============== AGENT HUB =============== -->
+        <section data-view="agent-hub">
+          <div class="docs">
+            <div class="panel">
+              <div class="panel-head"><h3>Bitget Agent Hub</h3></div>
+              <p>Sentinel integrates with Bitget Agent Hub through a thin adapter. Tool calls arrive as MCP requests; the adapter normalizes them into a Sentinel intent, runs the gate, and either executes via the live Agent Hub or replies with a sealed block receipt.</p>
+              <p>Five perception skills (macro analyst, market intel, news briefing, sentiment analyst, technical analysis) read through the proxy without being gated. Execution-class tools are always gated.</p>
+              <span class="codeblock"><span class="k">// src/adapters/agent-hub.js</span>
+const WRITE_TOOLS = new Set([
+  "futures_place_order",
+  "futures_modify_order",
+  "futures_cancel_order",
+  "futures_set_leverage",
+  "spot_place_order",
+  "account_transfer",
+  "withdraw"
+]);
+
+export async function guardedToolCall(toolCall, ctx) {
+  const intent = toolCallToIntent(toolCall);
+  const decision = await ctx.gate.handle(intent);
+  if (decision.verdict === "block") return blockResponse(decision);
+  return ctx.hub.invoke(decision.intent);
+}</span>
+            </div>
+            <div class="panel">
+              <div class="panel-head"><h3>Perception skills</h3></div>
+              <p>Read-only context layered into the agent prompt &mdash; never gated, never sealed.</p>
+              <ul class="tool-list">
+                <li><span class="name">macro-analyst</span><span class="tag passthrough">read-through</span></li>
+                <li><span class="name">market-intel</span><span class="tag passthrough">read-through</span></li>
+                <li><span class="name">news-briefing</span><span class="tag passthrough">read-through</span></li>
+                <li><span class="name">sentiment-analyst</span><span class="tag passthrough">read-through</span></li>
+                <li><span class="name">technical-analysis</span><span class="tag passthrough">read-through</span></li>
+              </ul>
+            </div>
+          </div>
+        </section>
+
+        <!-- =============== GITHUB =============== -->
+        <section data-view="github">
+          <div class="docs">
+            <div class="panel">
+              <div class="panel-head"><h3>Repository</h3></div>
+              <p><a href="https://github.com/dmetagame/sentinel-flight-recorder" target="_blank" rel="noopener" style="color: var(--signal); text-decoration: none;">github.com/dmetagame/sentinel-flight-recorder</a> &mdash; the deterministic gate, MCP proxy, Agent Hub adapter, Qwen integration, benchmark suite, and this dashboard.</p>
+              <p>Continuous integration runs the unit suite plus the 20-scenario bench on every push.</p>
+              <div style="display: grid; gap: 10px; margin-top: 12px;">
+                <img alt="CI status" src="https://github.com/dmetagame/sentinel-flight-recorder/actions/workflows/ci.yml/badge.svg" style="height: 24px; width: max-content;" />
+                <img alt="Vercel" src="https://img.shields.io/badge/deploy-vercel-black?logo=vercel" style="height: 22px; width: max-content;" />
+              </div>
+            </div>
+            <div class="panel">
+              <div class="panel-head"><h3>Layout</h3></div>
+              <ul class="tool-list">
+                <li><span class="name">src/core/risk.js</span><span class="tag passthrough">gate</span></li>
+                <li><span class="name">src/core/policy.js</span><span class="tag passthrough">policy</span></li>
+                <li><span class="name">src/core/merkle.js</span><span class="tag passthrough">sealing</span></li>
+                <li><span class="name">src/adapters/agent-hub.js</span><span class="tag passthrough">adapter</span></li>
+                <li><span class="name">src/adapters/qwen.js</span><span class="tag passthrough">llm</span></li>
+                <li><span class="name">src/mcp-proxy.js</span><span class="tag passthrough">stdio</span></li>
+                <li><span class="name">src/bench/scenarios.js</span><span class="tag passthrough">bench</span></li>
+                <li><span class="name">public/index.html</span><span class="tag passthrough">dashboard</span></li>
+              </ul>
+            </div>
+          </div>
+        </section>
+
+      </main>
+    </div>
 
     <script>
-      const summaryEl = document.querySelector("#summary");
-      const scenariosEl = document.querySelector("#scenarios");
-      const policyTextEl = document.querySelector("#policyText");
-      const policyResultEl = document.querySelector("#policyResult");
-      const receiptResultEl = document.querySelector("#receiptResult");
-      const timelineEl = document.querySelector("#timeline");
-      const spotlightEl = document.querySelector("#spotlight");
-      let timeline = [];
+      // Gate glyph — used only on intercepted rows (block/modify); never on allow.
+      const GATE_SVG = '<svg class="gate-glyph" viewBox="0 0 32 32" aria-hidden="true"><polygon points="11,2 21,2 30,11 30,21 21,30 11,30 2,21 2,11" fill="#FF5A1F"/><rect x="9" y="14.25" width="14" height="3.5" rx="1" fill="#161B20"/></svg>';
+      function gateGlyph(verdict) {
+        return verdict === "allow" ? "" : GATE_SVG;
+      }
 
-      loadBenchmark();
-      document.querySelector("#compilePolicy").addEventListener("click", compilePolicy);
+      const ROUTES = {
+        analytics: { title: "Analytics", sub: "A unified view of every Sentinel service — receipts written, policy compiled, bench coverage, and the agent surface guarded by the gate." },
+        receipts:  { title: "Receipts",  sub: "Live stream of tamper-evident flight receipts. Send a Bitget tool call through the gate and watch it land on the audit log." },
+        policy:    { title: "Policy",    sub: "Edit the natural-language mandate. Sentinel compiles it into a frozen policy object that the gate enforces deterministically." },
+        bench:     { title: "Bench",     sub: "20 adversarial scenarios run on every CI commit. Each receipt sealed into a Merkle root for replay." },
+        mcp:       { title: "MCP Proxy", sub: "Sentinel exposes Bitget Agent Hub over stdio JSON-RPC. Every write-class tool call is gated; perception skills pass through." },
+        "agent-hub": { title: "Agent Hub", sub: "Bitget Agent Hub integration — perception skills read through, execution tools route through the Sentinel gate." },
+        github:    { title: "GitHub",    sub: "Public repository, CI pipeline, and Vercel deployment of the dashboard." }
+      };
+
+      const pageTitle = document.querySelector("#pageTitle");
+      const pageSub = document.querySelector("#pageSub");
+      const railNav = document.querySelector("#railNav");
+      const merkleRootEl = document.querySelector("#merkleRoot");
+      const copyMerkleBtn = document.querySelector("#copyMerkle");
+      let merkleFull = "";
+      let benchCache = null;
+
+      function setRoute(route) {
+        if (!ROUTES[route]) route = "analytics";
+        document.body.dataset.route = route;
+        const meta = ROUTES[route];
+        pageTitle.textContent = meta.title;
+        pageSub.innerHTML = meta.sub;
+        railNav.querySelectorAll("a[data-route]").forEach((a) => {
+          a.classList.toggle("active", a.dataset.route === route);
+        });
+        if (location.hash !== "#" + route) location.hash = "#" + route;
+        window.scrollTo({ top: 0, behavior: "instant" });
+      }
+
+      window.addEventListener("hashchange", () => setRoute(location.hash.replace("#", "")));
+      document.addEventListener("click", (e) => {
+        const t = e.target.closest("[data-route]");
+        if (!t || t.tagName === "BODY") return;
+        if (t.matches("a[data-route]") || t.matches(".service-card")) {
+          e.preventDefault();
+          setRoute(t.dataset.route);
+        }
+      });
+
+      const initial = (location.hash || "#analytics").replace("#", "");
+      setRoute(initial);
+
+      copyMerkleBtn.addEventListener("click", async () => {
+        if (!merkleFull) return;
+        try {
+          await navigator.clipboard.writeText(merkleFull);
+          copyMerkleBtn.textContent = "copied";
+          setTimeout(() => (copyMerkleBtn.textContent = "copy"), 1400);
+        } catch {
+          copyMerkleBtn.textContent = "?";
+        }
+      });
 
       const demos = {
         safe: {
           label: "Safe BTC order",
           toolCall: {
-            id: "ui-safe",
-            agentId: "qwen-agent",
-            name: "futures_place_order",
+            id: "ui-safe", agentId: "qwen-agent", name: "futures_place_order",
             arguments: { orders: [{ symbol: "BTCUSDT", side: "buy", orderType: "market", size: "0.02", price: "100000", presetStopLossPrice: "98000", presetStopSurplusPrice: "104000", leverage: "3", market: { markPrice: 100000, timestamp: Date.now() } }] }
           }
         },
         missingStop: {
           label: "Missing stop repaired",
           toolCall: {
-            id: "ui-missing-stop",
-            agentId: "qwen-agent",
-            name: "futures_place_order",
+            id: "ui-missing-stop", agentId: "qwen-agent", name: "futures_place_order",
             arguments: { orders: [{ symbol: "ETHUSDT", side: "buy", orderType: "market", size: "1", price: "4000", leverage: "2", market: { markPrice: 4000, timestamp: Date.now() } }] }
           }
         },
         injection: {
           label: "Prompt injection",
           toolCall: {
-            id: "ui-injection",
-            agentId: "compromised-agent",
-            name: "futures_place_order",
+            id: "ui-injection", agentId: "compromised-agent", name: "futures_place_order",
             arguments: { orders: [{ symbol: "DOGEUSDT", side: "buy", orderType: "market", size: "1000", price: "0.15", leverage: "50", market: { markPrice: 0.15, timestamp: Date.now() } }] }
           }
         },
         transfer: {
           label: "Transfer attempt",
           toolCall: {
-            id: "ui-transfer",
-            agentId: "compromised-agent",
-            name: "account_transfer",
+            id: "ui-transfer", agentId: "compromised-agent", name: "account_transfer",
             arguments: { asset: "USDT", amount: "1000" }
           }
         }
       };
 
+      const VIOLATION_CODES = [
+        ["TRANSFER_BLOCKED", "Account transfers and withdrawals are blocked when allowTransfers=false."],
+        ["LEVERAGE_TOO_HIGH", "Leverage exceeds policy.trade.maxLeverage; intent is blocked."],
+        ["DAILY_LOSS_CIRCUIT_BREAKER", "Daily PnL has crossed policy.portfolio.maxDailyLossPct; trading is halted until reset."],
+        ["STOP_LOSS_REQUIRED", "Stop loss missing; if policy allows, gate repairs by injecting a default."],
+        ["STOP_LOSS_INJECTED", "Modification: stop loss inserted at the policy's safe distance."],
+        ["TRADE_RISK_TOO_HIGH", "Per-trade risk percent exceeds policy.trade.maxRiskPct; size is resized or intent blocked."],
+        ["TRADE_SIZE_RESIZED", "Modification: trade size reduced to fit the per-trade risk cap."],
+        ["PORTFOLIO_EXPOSURE_TOO_HIGH", "Total exposure would exceed policy.portfolio.maxExposurePct."],
+        ["STALE_MARKET_DATA", "Mark price timestamp older than policy.execution.maxStaleMs."],
+        ["SLIPPAGE_TOO_HIGH", "Intent price drifts beyond policy.execution.maxSlippageBps from the mark."],
+        ["UNSUPPORTED_SYMBOL", "Symbol not in policy.allowedSymbols."],
+        ["DUPLICATE_INTENT", "Replay of an already-sealed intent ID; the gate is idempotent."],
+        ["MISSING_SYMBOL", "Intent has no symbol; malformed."],
+        ["ZERO_OR_NEGATIVE_SIZE", "Size <= 0; malformed."],
+        ["PRICE_OUT_OF_BAND", "Limit price drifts farther from market than the policy allows."],
+        ["MANDATE_DRIFT", "Side or symbol contradicts the compiled mandate (e.g. long-only mandate, short attempted)."],
+        ["CONSECUTIVE_LOSS_COOLDOWN", "Recent loss streak triggered a cooldown window; trading suspended."]
+      ];
+
+      function renderCodeCatalog() {
+        const ul = document.querySelector("#codeCatalog");
+        if (!ul) return;
+        ul.innerHTML = VIOLATION_CODES.map(([code, desc]) =>
+          `<li><span class="code">${escapeHtml(code)}</span><span class="desc">${escapeHtml(desc)}</span></li>`
+        ).join("");
+      }
+
       document.querySelectorAll("button[data-demo]").forEach((button) => {
-        button.addEventListener("click", () => runToolCall(button.dataset.demo));
+        button.addEventListener("click", () => runToolCall(button, button.dataset.demo));
       });
 
-      async function loadBenchmark() {
-        const data = await fetchJson("/api/bench");
-        const summary = data.summary;
-        summaryEl.innerHTML = [
-          ["Pass", `${(summary.passRate * 100).toFixed(0)}%`],
-          ["Cases", summary.total],
-          ["Blocked", summary.blocked],
-          ["Repaired", summary.modified]
-        ].map(([label, value], index) => `
-          <article class="stat-card">
-            <strong>${value}</strong>
-            <span class="small">${label}</span>
-          </article>
-        `).join("");
+      const compilePolicyBtn = document.querySelector("#compilePolicy");
+      if (compilePolicyBtn) compilePolicyBtn.addEventListener("click", compilePolicy);
 
-        scenariosEl.innerHTML = data.outputs.map((item) => {
-          const reasons = item.result.decision.violations
-            .concat(item.result.decision.modifications)
-            .map((entry) => entry.message)
-            .join(" ");
-          return `
-            <article class="scenario-card">
-              <span class="tag ${item.actual}">${item.actual}</span>
-              <strong>${escapeHtml(item.threat || item.scenario)}</strong>
-              <span class="small">${escapeHtml(item.story || "")}</span>
-              <small>${escapeHtml(reasons || "Policy-compliant execution.")}</small>
-              <small><code>${item.result.receipt.receiptHash.slice(0, 24)}...</code></small>
-            </article>
-          `;
-        }).join("");
+      loadBenchmark();
+      renderCodeCatalog();
+
+      async function loadBenchmark() {
+        try {
+          const data = await fetchJson("/api/bench");
+          benchCache = data;
+          const summary = data.summary;
+          merkleFull = summary.receiptMerkleRoot || "";
+          merkleRootEl.textContent = merkleFull ? truncate(merkleFull, 12, 6) : "n/a";
+
+          set("#kpiBench", `${summary.passed}/${summary.total}`);
+          set("#kpiBlocked", summary.blocked);
+          set("#kpiRepaired", summary.modified);
+          set("#kpiAllowed", summary.allowed);
+
+          set("#kpiBench2", `${summary.passed}/${summary.total}`);
+          set("#kpiBlocked2", summary.blocked);
+          set("#kpiRepaired2", summary.modified);
+          set("#kpiAllowed2", summary.allowed);
+          set("#kpiPassPct", `${(summary.passRate * 100).toFixed(0)}%`);
+
+          set("#heroPass", `${(summary.passRate * 100).toFixed(0)}%`);
+          set("#heroPassSub", `${summary.passed} of ${summary.total} scenarios sealed`);
+          set("#heroReceipts", summary.total);
+          set("#heroReceiptsSub", merkleFull ? `root ${truncate(merkleFull, 8, 4)}` : "no root yet");
+          const violations = summary.blocked + summary.modified;
+          set("#heroViolations", violations);
+          set("#heroViolationsSub", `${summary.blocked} blocked · ${summary.modified} repaired`);
+
+          set("#svcReceipts", `${summary.total} sealed`);
+          set("#svcBench", `${summary.passed}/${summary.total}`);
+          set("#svcBenchStatus", summary.passed === summary.total ? "pass" : "fail");
+
+          // Donut: progress ring showing intercept rate
+          const total = summary.total || 1;
+          const bPct = (summary.blocked  / total) * 100;
+          const mPct = (summary.modified / total) * 100;
+          const aPct = (summary.allowed  / total) * 100;
+          const interceptPct = Math.round(((summary.blocked + summary.modified) / total) * 100);
+          // Animate from 0 → final on next frame so the transition is visible
+          requestAnimationFrame(() => {
+            const ring = document.querySelector("#donutProgress");
+            if (ring) ring.setAttribute("stroke-dasharray", `${interceptPct} ${100 - interceptPct}`);
+          });
+          // Tick the center number too (0 → final) so it counts up alongside the arc
+          animateCount("#donutCenter", interceptPct, "%");
+          set("#legBlock",  summary.blocked);
+          set("#legModify", summary.modified);
+          set("#legAllow",  summary.allowed);
+          set("#pctBlock",  `${Math.round(bPct)}%`);
+          set("#pctModify", `${Math.round(mPct)}%`);
+          set("#pctAllow",  `${Math.round(aPct)}%`);
+          set("#distMeta", `${summary.total} scenarios · ${(summary.passRate * 100).toFixed(0)}% pass`);
+
+          // Stacked verdict-by-category bars
+          const byCat = {};
+          for (const o of data.outputs) {
+            if (!byCat[o.category]) byCat[o.category] = { block: 0, modify: 0, allow: 0 };
+            const v = o.actual;
+            if (v === "block")  byCat[o.category].block++;
+            else if (v === "modify") byCat[o.category].modify++;
+            else byCat[o.category].allow++;
+          }
+          const cats = Object.entries(byCat).map(([name, mix]) => ({
+            name,
+            block: mix.block,
+            modify: mix.modify,
+            allow: mix.allow,
+            total: mix.block + mix.modify + mix.allow,
+            // Severity: block weighted highest, allow lowest
+            severity: mix.block * 100 + mix.modify * 10 + mix.allow
+          })).sort((a, b) => b.severity - a.severity || b.total - a.total);
+
+          const catStack = document.querySelector("#catStack");
+          if (catStack) {
+            catStack.innerHTML = cats.map((c) => {
+              const total = c.total || 1;
+              const segs = [
+                c.block  && `<div class="seg block"  style="width:${(c.block  / total) * 100}%"></div>`,
+                c.modify && `<div class="seg modify" style="width:${(c.modify / total) * 100}%"></div>`,
+                c.allow  && `<div class="seg allow"  style="width:${(c.allow  / total) * 100}%"></div>`
+              ].filter(Boolean).join("");
+              return `
+                <div class="cat-row">
+                  <span class="cat-name" title="${escapeHtml(c.name)}">${escapeHtml(c.name)}</span>
+                  <div class="cat-bar">${segs}</div>
+                  <span class="cat-count">${c.total}</span>
+                </div>
+              `;
+            }).join("");
+          }
+
+          const recent = document.querySelector("#analyticsRecent");
+          if (recent) {
+            recent.innerHTML = data.outputs.slice(0, 6).map((o) => {
+              const v = o.actual;
+              const tool = o.result.decision.intent.tool || "—";
+              const symbol = o.result.decision.intent.symbol || "—";
+              const hash = o.result.receipt.receiptHash;
+              return `
+                <tr>
+                  <td>${escapeHtml(o.scenario)}</td>
+                  <td class="tool">${escapeHtml(tool)}</td>
+                  <td class="mono">${escapeHtml(symbol)}</td>
+                  <td>${gateGlyph(v)}<span class="verdict ${v}">${v}</span></td>
+                  <td class="hash">${hash.slice(0, 16)}…</td>
+                </tr>`;
+            }).join("");
+          }
+
+          set("#kpiCategories", cats.length);
+          const scenariosEl = document.querySelector("#scenarios");
+          const benchMetaEl = document.querySelector("#benchMeta");
+          if (benchMetaEl) benchMetaEl.textContent = `${summary.total} cases · ${(summary.passRate * 100).toFixed(0)}% pass · Merkle ${truncate(merkleFull, 8, 4)}`;
+          if (scenariosEl) {
+            scenariosEl.innerHTML = data.outputs.map((item) => {
+              const reasons = item.result.decision.violations
+                .concat(item.result.decision.modifications)
+                .map((entry) => entry.message)
+                .join(" ");
+              const hash = item.result.receipt.receiptHash;
+              const v = item.actual;
+              return `
+                <article class="scenario-card">
+                  <div class="scenario-head">${gateGlyph(v)}<span class="verdict ${v}">${v}</span></div>
+                  <strong>${escapeHtml(item.threat || item.scenario)}</strong>
+                  <span class="small">${escapeHtml(item.story || "")}</span>
+                  <span class="small">${escapeHtml(reasons || "Policy-compliant execution.")}</span>
+                  <code class="hash">${hash.slice(0, 32)}…</code>
+                </article>
+              `;
+            }).join("");
+          }
+        } catch (error) {
+          const benchMetaEl = document.querySelector("#benchMeta");
+          if (benchMetaEl) benchMetaEl.textContent = `Bench unavailable: ${error.message}`;
+        }
+      }
+
+      function pickColor(category) {
+        if (/inject|fund|drift|mandate/.test(category)) return "var(--blocked)";
+        if (/repair|risk|quality/.test(category)) return "var(--modified)";
+        return "var(--allowed)";
       }
 
       async function compilePolicy() {
-        policyResultEl.textContent = "Compiling...";
-        const payload = await fetchJson("/api/compile-policy", {
-          method: "POST",
-          headers: { "content-type": "application/json" },
-          body: JSON.stringify({ text: policyTextEl.value })
-        });
-        policyResultEl.textContent = JSON.stringify({
-          source: payload.source,
-          allowedSymbols: payload.policy.allowedSymbols,
-          maxRiskPct: payload.policy.trade.maxRiskPct,
-          maxLeverage: payload.policy.trade.maxLeverage,
-          maxDailyLossPct: payload.policy.portfolio.maxDailyLossPct,
-          transfersAllowed: payload.policy.security.allowTransfers
-        }, null, 2);
+        const policyTextEl = document.querySelector("#policyText");
+        const policyResultEl = document.querySelector("#policyResult");
+        policyResultEl.textContent = "Compiling…";
+        try {
+          const payload = await fetchJson("/api/compile-policy", {
+            method: "POST",
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify({ text: policyTextEl.value })
+          });
+          const view = {
+            source: payload.source,
+            allowedSymbols: payload.policy.allowedSymbols,
+            maxRiskPct: payload.policy.trade.maxRiskPct,
+            maxLeverage: payload.policy.trade.maxLeverage,
+            maxDailyLossPct: payload.policy.portfolio.maxDailyLossPct,
+            transfersAllowed: payload.policy.security.allowTransfers
+          };
+          policyResultEl.textContent = JSON.stringify(view, null, 2);
+          const symbolPart = (view.allowedSymbols || []).join("/") || "default";
+          set("#kpiPolicy", `${symbolPart} · ${view.maxRiskPct}%·${view.maxLeverage}x`);
+        } catch (error) {
+          policyResultEl.textContent = `Compile failed: ${error.message}`;
+        }
       }
 
-      async function runToolCall(key) {
+      async function runToolCall(button, key) {
         const demo = demos[key];
-        receiptResultEl.textContent = "Evaluating...";
-        const payload = await fetchJson("/api/tool-call", {
-          method: "POST",
-          headers: { "content-type": "application/json" },
-          body: JSON.stringify({
-            policyText: policyTextEl.value,
-            toolCall: demo.toolCall,
-            freshState: true
-          })
-        });
-
-        const decision = payload.sentinel.decision;
-        const receipt = payload.sentinel.receipt;
-        const row = {
-          label: demo.label,
-          verdict: decision.verdict,
-          explanation: payload.explanation.text,
-          receiptHash: receipt.receiptHash,
-          violations: decision.violations,
-          modifications: decision.modifications
-        };
-        timeline = [row, ...timeline].slice(0, 6);
-        renderTimeline();
-        renderSpotlight(row);
-        receiptResultEl.textContent = JSON.stringify(row, null, 2);
+        if (!demo) return;
+        button.disabled = true;
+        const time = formatTime(new Date());
+        const placeholder = appendPendingRow(time, demo.label);
+        try {
+          const policyText = (document.querySelector("#policyText") || { value: "" }).value;
+          const payload = await fetchJson("/api/tool-call", {
+            method: "POST",
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify({ policyText, toolCall: demo.toolCall, freshState: true })
+          });
+          const decision = payload.sentinel.decision;
+          const receipt = payload.sentinel.receipt;
+          const explanation = payload.explanation?.text || "";
+          const reasonText = (decision.violations.concat(decision.modifications))
+            .map((entry) => entry.message)
+            .join(" ") || "Policy-compliant execution.";
+          updateRow(placeholder, {
+            time,
+            tool: decision.intent.tool || demo.toolCall.name,
+            symbol: decision.intent.symbol || "—",
+            verdict: decision.verdict,
+            reasons: reasonText,
+            receiptHash: receipt.receiptHash
+          });
+          updateSpotlight(demo.label, decision.verdict, explanation || reasonText, receipt.receiptHash);
+        } catch (error) {
+          placeholder.querySelector(".reasons").textContent = `Sentinel error: ${error.message}`;
+        } finally {
+          button.disabled = false;
+        }
       }
 
-      function renderTimeline() {
-        timelineEl.innerHTML = timeline.map((item) => `
-          <div class="timeline-item">
-            <span class="dot" style="background:${colorFor(item.verdict)}"></span>
-            <div>
-              <span class="tag ${item.verdict}">${item.verdict}</span>
-              <strong>${escapeHtml(item.label)}</strong>
-              <span class="small">${escapeHtml(item.explanation)}</span>
-              <small><code>${item.receiptHash.slice(0, 32)}...</code></small>
-            </div>
-          </div>
-        `).join("");
+      function appendPendingRow(time, label) {
+        const auditBody = document.querySelector("#auditBody");
+        if (auditBody.querySelector("tr.empty")) auditBody.innerHTML = "";
+        const row = document.createElement("tr");
+        row.className = "flash";
+        row.innerHTML = `
+          <td class="mono">${time}</td>
+          <td class="tool">${escapeHtml(label)}</td>
+          <td class="mono">…</td>
+          <td><span class="verdict allow" style="opacity:0.45">running</span></td>
+          <td class="reasons">Evaluating intent…</td>
+          <td class="hash">pending</td>
+        `;
+        auditBody.prepend(row);
+        return row;
       }
 
-      function renderSpotlight(item) {
+      function updateRow(row, data) {
+        row.innerHTML = `
+          <td class="mono">${data.time}</td>
+          <td class="tool">${escapeHtml(data.tool)}</td>
+          <td class="mono">${escapeHtml(data.symbol)}</td>
+          <td>${gateGlyph(data.verdict)}<span class="verdict ${data.verdict}">${data.verdict}</span></td>
+          <td class="reasons">${escapeHtml(data.reasons)}</td>
+          <td class="hash">${data.receiptHash.slice(0, 16)}…</td>
+        `;
+        row.classList.remove("flash");
+        void row.offsetWidth;
+        row.classList.add("flash");
+      }
+
+      function updateSpotlight(label, verdict, explanation, receiptHash) {
+        const spotlightEl = document.querySelector("#spotlight");
         spotlightEl.innerHTML = `
-          <span class="tag ${item.verdict}">${item.verdict}</span>
-          <strong>${escapeHtml(item.label)}</strong>
-          <span class="small">${escapeHtml(item.explanation)}</span>
-          <div class="receipt small"><code>${item.receiptHash}</code></div>
+          <span class="verdict ${verdict}">${gateGlyph(verdict)}${verdict}</span>
+          <strong>${escapeHtml(label)}</strong>
+          <span class="small">${escapeHtml(explanation)}</span>
+          <code class="hash">${escapeHtml(receiptHash)}</code>
         `;
       }
 
       async function fetchJson(url, options) {
         const response = await fetch(url, options);
-        if (!response.ok) throw new Error(await response.text());
+        if (!response.ok) throw new Error((await response.text()).slice(0, 200));
         return response.json();
       }
 
-      function colorFor(verdict) {
-        if (verdict === "block") return "var(--red)";
-        if (verdict === "modify") return "var(--yellow)";
-        return "var(--green)";
+      function set(sel, val) {
+        const el = document.querySelector(sel);
+        if (el) el.textContent = val;
+      }
+
+      function animateCount(sel, target, suffix = "") {
+        const el = document.querySelector(sel);
+        if (!el) return;
+        const start = performance.now();
+        const duration = 1200;
+        function tick(now) {
+          const t = Math.min(1, (now - start) / duration);
+          // easeOutCubic to match the donut transition
+          const eased = 1 - Math.pow(1 - t, 3);
+          el.textContent = `${Math.round(target * eased)}${suffix}`;
+          if (t < 1) requestAnimationFrame(tick);
+        }
+        requestAnimationFrame(tick);
       }
 
       function escapeHtml(value) {
-        return String(value)
+        return String(value ?? "")
           .replaceAll("&", "&amp;")
           .replaceAll("<", "&lt;")
           .replaceAll(">", "&gt;")
           .replaceAll('"', "&quot;")
           .replaceAll("'", "&#039;");
+      }
+
+      function truncate(value, head, tail) {
+        if (!value) return "";
+        if (value.length <= head + tail + 1) return value;
+        return `${value.slice(0, head)}…${value.slice(-tail)}`;
+      }
+
+      function formatTime(date) {
+        return date.toLocaleTimeString([], { hour12: false });
       }
     </script>
   </body>

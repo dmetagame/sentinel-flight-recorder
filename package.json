@@ -9,8 +9,13 @@
     "demo": "node src/demo.js",
     "dev": "node src/server.js",
     "deploy:vercel": "npx vercel@latest --prod --yes",
+    "icons": "node scripts/generate-icons.mjs && node scripts/generate-og.mjs",
     "mcp:proxy": "node src/mcp-proxy.js",
     "test": "node --test"
+  },
+  "devDependencies": {
+    "png-to-ico": "^2.1.8",
+    "sharp": "^0.33.5"
   },
   "engines": {
     "node": ">=20"
