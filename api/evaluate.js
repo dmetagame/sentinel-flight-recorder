@@ -8,7 +8,19 @@ export default async function handler(req, res) {
     return;
   }
 
-  const body = parseBody(req.body);
+  let body;
+  try {
+    body = parseBody(req.body);
+  } catch {
+    res.status(400).json({ error: "Invalid JSON body" });
+    return;
+  }
+
+  if (!body || typeof body !== "object" || !body.intent) {
+    res.status(400).json({ error: "Missing required field: intent" });
+    return;
+  }
+
   const compiled = body.policyText
     ? await compilePolicy(body.policyText, body.policy ?? {})
     : { policy: body.policy ?? {} };
@@ -23,6 +35,6 @@ export default async function handler(req, res) {
 
 function parseBody(body) {
   if (!body) return {};
-  if (typeof body === "string") return JSON.parse(body);
+  if (typeof body === "string") return body.trim() ? JSON.parse(body) : {};
   return body;
 }

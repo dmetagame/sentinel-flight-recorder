@@ -24,13 +24,23 @@ const server = http.createServer(async (req, res) => {
     }
 
     if (req.method === "POST" && req.url === "/api/compile-policy") {
-      const body = await readJson(req);
-      sendJson(res, await compilePolicy(body.text ?? "", body.policy ?? {}));
+      const body = await readJsonOrBadRequest(req, res);
+      if (body === null) return;
+      if (typeof body.text !== "string" || !body.text.trim()) {
+        sendJsonStatus(res, 400, { error: "Missing required field: text" });
+        return;
+      }
+      sendJson(res, await compilePolicy(body.text, body.policy ?? {}));
       return;
     }
 
     if (req.method === "POST" && req.url === "/api/evaluate") {
-      const body = await readJson(req);
+      const body = await readJsonOrBadRequest(req, res);
+      if (body === null) return;
+      if (!body.intent) {
+        sendJsonStatus(res, 400, { error: "Missing required field: intent" });
+        return;
+      }
       const compiled = body.policyText
         ? await compilePolicy(body.policyText, body.policy ?? {})
         : { policy: body.policy ?? {} };
@@ -45,7 +55,12 @@ const server = http.createServer(async (req, res) => {
     }
 
     if (req.method === "POST" && req.url === "/api/tool-call") {
-      const body = await readJson(req);
+      const body = await readJsonOrBadRequest(req, res);
+      if (body === null) return;
+      if (!body.toolCall || !body.toolCall.name) {
+        sendJsonStatus(res, 400, { error: "Missing required field: toolCall.name" });
+        return;
+      }
       const compiled = body.policyText
         ? await compilePolicy(body.policyText, body.policy ?? {})
         : { policy: body.policy ?? {} };
@@ -75,6 +90,20 @@ server.listen(port, host, () => {
 function sendJson(res, payload) {
   res.writeHead(200, { "content-type": "application/json" });
   res.end(JSON.stringify(payload, null, 2));
+}
+
+function sendJsonStatus(res, statusCode, payload) {
+  res.writeHead(statusCode, { "content-type": "application/json" });
+  res.end(JSON.stringify(payload, null, 2));
+}
+
+async function readJsonOrBadRequest(req, res) {
+  try {
+    return await readJson(req);
+  } catch {
+    sendJsonStatus(res, 400, { error: "Invalid JSON body" });
+    return null;
+  }
 }
 
 function sendError(res, error) {

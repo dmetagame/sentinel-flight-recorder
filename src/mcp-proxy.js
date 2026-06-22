@@ -65,6 +65,7 @@ async function handleMessage(message) {
       name: params.name,
       arguments: params.arguments ?? {}
     });
+    logVerdict(params.name, result);
     sendResult(message.id, asMcpToolResult(result));
     return;
   }
@@ -130,4 +131,17 @@ function sendResult(id, result) {
 
 function sendError(id, code, message) {
   stdout.write(encodeMessage({ jsonrpc: "2.0", id, error: { code, message } }));
+}
+
+function logVerdict(toolName, result) {
+  if (!result?.sentinel) {
+    process.stderr.write(`[sentinel] verdict=passthrough tool=${toolName}\n`);
+    return;
+  }
+  const verdict = result.sentinel.decision?.verdict ?? "unknown";
+  const receipt = result.sentinel.receipt?.receiptHash?.slice(0, 12) ?? "—";
+  const violations = result.sentinel.decision?.violations ?? [];
+  const codes = violations.map((v) => v.code).filter(Boolean).join(",");
+  const tail = codes ? ` codes=${codes}` : "";
+  process.stderr.write(`[sentinel] verdict=${verdict} tool=${toolName} receipt=${receipt}${tail}\n`);
 }

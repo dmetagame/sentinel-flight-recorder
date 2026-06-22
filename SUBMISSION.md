@@ -4,45 +4,66 @@
 
 Track 2: Trading Infra
 
-## 200-Word Project Description
-
-Sentinel Flight Recorder is an MCP-native execution-control plane for autonomous Bitget trading agents. It sits between an AI agent and Bitget Agent Hub, then deterministically allows, modifies, or blocks dangerous tool calls before they can reach execution. Sentinel is not a trading bot; it is safety infrastructure that other trading agents can plug into.
-
-The system enforces policies for max risk per trade, max leverage, mandatory stop loss, allowed symbols, stale market data, slippage, duplicate orders, daily loss limits, portfolio exposure, and transfer blocking. Qwen can compile natural-language risk mandates and explain decisions, but final authorization always comes from deterministic code.
-
-Sentinel includes a red-team benchmark that sends adversarial trading intents through the gate: 50x leverage requests, missing stops, duplicate order spam, unsupported symbols, stale prices, transfer attempts, and circuit-breaker breaches. Every decision produces a flight-recorder receipt with policy hash, intent hash, decision hash, execution hash, and receipt hash, summarized into a Merkle root.
-
-For developers, Sentinel provides a REST demo cockpit plus a stdio MCP proxy mode that can sit in front of an upstream Agent Hub MCP server. The goal is simple: prove an agent can trade safely before it gets real execution rights.
-
-Word count: 198
-
 ## One-Liner
 
-Sentinel is the safety control plane that lets any Bitget trading agent prove it can trade safely before it gets execution rights.
+Sentinel is the safety control plane that lets any MCP-speaking trading agent prove it can trade safely before it gets execution rights — with deterministic policy enforcement and Merkle-sealed receipts for every decision.
 
 ## Live Demo
 
 https://sentinel-flight-recorder.vercel.app
 
+## 200-Word Project Description
+
+Sentinel Flight Recorder is an MCP-native execution-control plane for autonomous trading agents. It is a stdio MCP server that drops between any MCP-speaking agent and any upstream tool catalog — Bitget Agent Hub, a Bitget testnet adapter, a paper executor — and inspects every execution call against a deterministic policy engine before it can reach the exchange.
+
+Sentinel enforces per-trade risk, leverage caps, mandatory stop loss, allowed symbols, stale market data, slippage, duplicate orders, daily-loss circuit breakers, portfolio exposure caps, and transfer/withdraw blocking. Qwen can compile natural-language risk mandates into policy JSON and explain decisions in plain language, but final authorization is always deterministic code — Qwen never decides whether a trade executes.
+
+Every gate decision produces a flight-recorder receipt with `policyHash`, `intentHash`, `decisionHash`, `executionHash`, and `receiptHash`, summarized into a Merkle root that makes a bench run referenceable as a tamper-evident batch. A 20-scenario adversarial benchmark sends prompt-injection leverage escalations, missing stops, transfer attempts, stale data, withdrawal attempts, and duplicate orders through the gate. Current pass rate: 20/20.
+
+Sentinel is not a trading bot. It is the safety infrastructure any Bitget agent can plug into in 30 seconds.
+
+Word count: 199
+
 ## Why This Fits Track 2
 
-- It is infrastructure for other AI trading agents, not a standalone strategy.
-- It integrates with Bitget Agent Hub-style tool calls.
-- It solves a real pain point: autonomous agents can make unsafe execution calls.
-- It provides low-friction local commands, benchmark outputs, and an MCP proxy entrypoint.
-- It produces verifiable usage evidence through receipts and benchmark artifacts.
+- It is infrastructure for other AI trading agents, not a standalone strategy
+- It speaks MCP, so any compliant agent (Claude Desktop, Cursor, Cline, custom) can adopt it with a one-line config change
+- It maps directly to Bitget Agent Hub tool shapes (`futures_place_order`, `futures_modify_order`, `futures_set_leverage`, `spot_place_order`, `account_transfer`, `withdraw`)
+- It solves a real pain point: autonomous agents will make unsafe execution calls and most teams have no paper trail to figure out what happened
+- It produces verifiable evidence: 20/20 adversarial scenarios passing, plus per-decision receipts hashed into a Merkle root
 
 ## Core Features
 
-- MCP-style guarded execution proxy
-- Agent Hub tool-call adapter
-- Deterministic policy engine
-- Qwen policy compiler and explainer with safe fallback
-- Paper execution mode
-- Red-team benchmark
-- Flight-recorder receipts
-- Merkle-rooted benchmark run
-- Judge-facing dashboard cockpit
+- Stdio MCP server that proxies any upstream tool catalog
+- Deterministic policy engine (final authorization, always)
+- Qwen policy compiler + explainer with reproducible fallback
+- Agent Hub tool-call adapter for the 6 Bitget execution tools
+- Paper execution mode by default
+- 20-scenario adversarial red-team benchmark
+- Flight-recorder receipts with content-addressed hashes
+- Merkle-rooted batch evidence
+- Cockpit dashboard for judges and operators
+
+## 30-Second Adoption
+
+Add to any MCP client config (Claude Desktop shown):
+
+```json
+{
+  "mcpServers": {
+    "sentinel": {
+      "command": "node",
+      "args": ["/abs/path/to/sentinel-flight-recorder/src/mcp-proxy.js"],
+      "env": {
+        "SENTINEL_UPSTREAM_COMMAND": "node",
+        "SENTINEL_UPSTREAM_ARGS": "fixtures/fake-mcp-upstream.js"
+      }
+    }
+  }
+}
+```
+
+Restart the client. The agent now sees the upstream's tools, each prefixed `[Sentinel guarded]`. Every execution call gets gated and receipted.
 
 ## Demo Commands
 
@@ -53,82 +74,77 @@ npm run demo
 npm run dev
 ```
 
-Dashboard:
+Local cockpit at http://127.0.0.1:8787.
 
-```text
-http://127.0.0.1:8787
-```
-
-MCP proxy mode:
+Stdio MCP proxy:
 
 ```bash
 npm run mcp:proxy
 ```
 
-Proxy in front of upstream Bitget MCP:
+Proxy in front of any upstream MCP:
 
 ```bash
-export SENTINEL_UPSTREAM_COMMAND="npx"
-export SENTINEL_UPSTREAM_ARGS="-y bitget-mcp-server"
+export SENTINEL_UPSTREAM_COMMAND="node"
+export SENTINEL_UPSTREAM_ARGS="fixtures/fake-mcp-upstream.js"
 npm run mcp:proxy
 ```
 
 ## Demo Video Flow
 
-1. Open the dashboard and show the architecture: Agent → Sentinel → Bitget Agent Hub.
-2. Show benchmark summary: 20/20 adversarial cases passing.
-3. Compile a natural-language mandate using Qwen or deterministic fallback.
-4. Run a safe BTC order and show `allow`.
-5. Run an ETH order without stop loss and show `modify`.
-6. Run a prompt-injection / 50x leverage order and show `block` or repair.
-7. Run a transfer attempt and show hard block.
-8. Show the receipt hash and Merkle root as evidence.
-9. Close with MCP proxy mode for developer integration.
+1. Open the cockpit and walk the architecture: agent → Sentinel → upstream
+2. Show benchmark summary: 20/20 adversarial cases passing, Merkle root highlighted
+3. Compile a natural-language mandate using Qwen (or deterministic fallback)
+4. Run a safe BTC order → `allow`
+5. Run an ETH order without stop loss → `modify` with deterministic stop
+6. Run a prompt-injection 50x leverage instruction → `modify` (capped) or `block`
+7. Run a transfer attempt → hard `block`
+8. Open a receipt: show `policyHash`, `intentHash`, `decisionHash`, `receiptHash`, Merkle root
+9. Close on MCP proxy stderr stream showing live verdicts from a real client
 
 ## Evidence
 
 Generated by `npm run bench`:
 
-- `artifacts/bench-report.md`
-- `artifacts/flight-receipts.jsonl`
-- `artifacts/receipt-merkle-root.txt`
+- `artifacts/bench-report.md` — 20/20 pass rate, per-scenario verdict table
+- `artifacts/flight-receipts.jsonl` — one JSON line per decision
+- `artifacts/receipt-merkle-root.txt` — Merkle root over the batch (current: `cd344723c76f61085c9d9047a522468fc2f5cd08bf4d14f4ea3efe339aabfbfa`)
 
-Benchmark currently covers:
+Benchmark coverage (20 scenarios across 11 categories):
 
-- normal compliant trade
-- missing stop loss repair
-- oversized risk repair
+- reasonable compliant trade
+- missing stop loss → repaired
+- oversized risk → resized
 - prompt-injection leverage escalation
-- unsupported symbol block
-- stale market data block
-- excessive slippage block
-- transfer block
+- unsupported symbol
+- stale market data
+- excessive slippage
+- transfer attempt
 - daily loss circuit breaker
 - portfolio exposure cap
-- duplicate order block
+- duplicate order
 - malformed missing-symbol order
 - zero-size order
 - negative price
 - price far away from market
-- long-only mandate drift
+- long-only mandate drift (short side)
 - consecutive-loss cooldown
 - explicit leverage-change attempt
 - withdrawal attempt
-- read-only pass-through
+- read-only call pass-through
 
 ## Security Position
 
-- No real funds required.
-- Paper mode by default.
-- Transfers blocked by default.
+- No real funds required. Paper execution is the default.
+- Transfers and withdrawals blocked unless policy explicitly opts in.
 - Qwen never authorizes execution.
 - Deterministic policy engine is the final gate.
-- Exchange credentials should never be committed or exposed to frontend code.
+- Exchange credentials must live in environment, never in the frontend.
 
 ## Differentiation
 
-Most hackathon trading agents answer: “What should I trade?”
+Most hackathon trading agents answer: *"What should I trade?"*
 
-Sentinel answers: “Can this agent be trusted with execution tools?”
+Sentinel answers: *"Can this agent be trusted with execution tools?"*
 
-That makes Sentinel complementary to every Track 1 trading bot and directly useful to the Bitget Agent Hub ecosystem.
+That makes Sentinel complementary to every Track 1 trading bot and directly useful as Track 2 infrastructure for the entire Bitget Agent Hub ecosystem.
