@@ -59,6 +59,7 @@ export async function compilePolicy(text, basePolicy = {}, env = process.env) {
       baseUrl: env.BITGET_QWEN_BASE_URL ?? DEFAULT_BASE_URL,
       model: env.BITGET_QWEN_MODEL ?? DEFAULT_MODEL,
       timeoutMs: timeoutMsFromEnv(env.BITGET_QWEN_TIMEOUT_MS, DEFAULT_COMPILE_TIMEOUT_MS),
+      maxTokens: 350,
       messages: [
         {
           role: "system",
@@ -66,6 +67,7 @@ export async function compilePolicy(text, basePolicy = {}, env = process.env) {
             "You convert trading-risk mandates into strict JSON policy overrides.",
             "Return only JSON. Do not include markdown.",
             "Allowed top-level keys: portfolio, trade, data, security, allowedSymbols.",
+            "Use only field names already present in basePolicy.",
             "Never loosen unspecified fields. Never set allowTransfers true."
           ].join(" ")
         },
@@ -125,6 +127,7 @@ export async function explainDecisionWithQwen(result, env = process.env) {
       baseUrl: env.BITGET_QWEN_BASE_URL ?? DEFAULT_BASE_URL,
       model: env.BITGET_QWEN_MODEL ?? DEFAULT_MODEL,
       timeoutMs: timeoutMsFromEnv(env.BITGET_QWEN_EXPLAIN_TIMEOUT_MS, DEFAULT_EXPLAIN_TIMEOUT_MS),
+      maxTokens: 180,
       messages: [
         {
           role: "system",
@@ -154,7 +157,7 @@ export async function explainDecisionWithQwen(result, env = process.env) {
   }
 }
 
-async function callQwen({ apiKey, baseUrl, model, messages, timeoutMs }) {
+async function callQwen({ apiKey, baseUrl, model, messages, timeoutMs, maxTokens }) {
   const response = await fetch(`${baseUrl.replace(/\/$/, "")}/chat/completions`, {
     method: "POST",
     headers: {
@@ -164,7 +167,9 @@ async function callQwen({ apiKey, baseUrl, model, messages, timeoutMs }) {
     body: JSON.stringify({
       model,
       messages,
-      temperature: 0.1
+      temperature: 0.1,
+      max_tokens: maxTokens,
+      enable_thinking: false
     }),
     signal: AbortSignal.timeout(timeoutMs)
   });

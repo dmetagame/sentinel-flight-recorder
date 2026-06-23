@@ -19,6 +19,7 @@ test("Qwen overrides preserve stricter unspecified base-policy fields", async (t
   const originalFetch = globalThis.fetch;
   const originalTimeout = AbortSignal.timeout;
   let requestedUrl;
+  let requestedBody;
   const timeouts = [];
   t.after(() => {
     globalThis.fetch = originalFetch;
@@ -28,8 +29,9 @@ test("Qwen overrides preserve stricter unspecified base-policy fields", async (t
     timeouts.push(timeoutMs);
     return new AbortController().signal;
   };
-  globalThis.fetch = async (url) => {
+  globalThis.fetch = async (url, options) => {
     requestedUrl = url;
+    requestedBody = JSON.parse(options.body);
     return {
       ok: true,
       async json() {
@@ -53,6 +55,8 @@ test("Qwen overrides preserve stricter unspecified base-policy fields", async (t
   assert.equal(result.policy.portfolio.maxDailyLossPct, 1);
   assert.equal(result.policy.security.allowTransfers, false);
   assert.equal(requestedUrl, "https://hackathon.bitgetops.com/v1/chat/completions");
+  assert.equal(requestedBody.enable_thinking, false);
+  assert.equal(requestedBody.max_tokens, 350);
   assert.deepEqual(timeouts, [20000]);
 });
 
