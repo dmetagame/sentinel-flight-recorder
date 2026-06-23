@@ -31,10 +31,12 @@ Do not write your API key into source files.
 
 ```bash
 export BITGET_QWEN_API_KEY="your-key"
-export BITGET_QWEN_BASE_URL="https://hackathon.bitgetops.com/v1"
+export BITGET_QWEN_BASE_URL="https://dashscope-intl.aliyuncs.com/compatible-mode/v1"
 export BITGET_QWEN_MODEL="qwen3.6-plus"
 npm run dev
 ```
+
+Use `https://hackathon.bitgetops.com/v1` instead if your key was issued for the Bitget hackathon gateway rather than Alibaba Cloud DashScope.
 
 When the key is present, Sentinel attempts live Qwen calls for:
 

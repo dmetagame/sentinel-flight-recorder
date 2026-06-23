@@ -43,6 +43,28 @@ test("Qwen overrides preserve stricter unspecified base-policy fields", async (t
   assert.equal(result.policy.security.allowTransfers, false);
 });
 
+test("Qwen fallback does not expose provider error details", async (t) => {
+  const originalFetch = globalThis.fetch;
+  t.after(() => {
+    globalThis.fetch = originalFetch;
+  });
+  globalThis.fetch = async () => ({
+    ok: false,
+    status: 401,
+    async text() {
+      return "Incorrect API key provided.";
+    }
+  });
+
+  const result = await compilePolicy("Risk at most 0.5%.", {}, {
+    BITGET_QWEN_API_KEY: "test-key"
+  });
+
+  assert.equal(result.source, "deterministic-fallback-after-qwen-error");
+  assert.equal(result.error, "Qwen unavailable; deterministic fallback used.");
+  assert.equal(result.policy.trade.maxRiskPct, 0.5);
+});
+
 test("Qwen explanations use a short timeout so safety responses stay responsive", async (t) => {
   const originalFetch = globalThis.fetch;
   const originalTimeout = AbortSignal.timeout;

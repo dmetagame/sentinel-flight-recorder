@@ -1,9 +1,10 @@
 import { mergePolicy } from "../core/policy.js";
 
-const DEFAULT_BASE_URL = "https://hackathon.bitgetops.com/v1";
+const DEFAULT_BASE_URL = "https://dashscope-intl.aliyuncs.com/compatible-mode/v1";
 const DEFAULT_MODEL = "qwen3.6-plus";
 const DEFAULT_COMPILE_TIMEOUT_MS = 12_000;
 const DEFAULT_EXPLAIN_TIMEOUT_MS = 3_000;
+const PUBLIC_QWEN_ERROR = "Qwen unavailable; deterministic fallback used.";
 
 export function compilePolicyFromText(text, basePolicy = {}) {
   const policy = mergePolicy(basePolicy);
@@ -89,7 +90,7 @@ export async function compilePolicy(text, basePolicy = {}, env = process.env) {
     return {
       ...fallback,
       source: "deterministic-fallback-after-qwen-error",
-      error: error.message
+      error: publicQwenError(error)
     };
   }
 }
@@ -148,7 +149,7 @@ export async function explainDecisionWithQwen(result, env = process.env) {
     return {
       source: "deterministic-fallback-after-qwen-error",
       text: explainDecision(result),
-      error: error.message
+      error: publicQwenError(error)
     };
   }
 }
@@ -226,4 +227,8 @@ function objectOrEmpty(value) {
 function timeoutMsFromEnv(value, fallback) {
   const parsed = Number(value);
   return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback;
+}
+
+function publicQwenError() {
+  return PUBLIC_QWEN_ERROR;
 }

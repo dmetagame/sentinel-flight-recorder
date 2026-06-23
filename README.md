@@ -139,7 +139,7 @@ Qwen handles natural-language → policy compilation and human-readable explanat
 - Qwen may explain *why* an action was blocked or modified.
 - Qwen never decides whether a trade executes — that is always deterministic JavaScript.
 
-Set `BITGET_QWEN_API_KEY` to enable live calls. Without a key, Sentinel uses a deterministic fallback parser so the demo is reproducible.
+Set `BITGET_QWEN_API_KEY` to enable live calls. Alibaba Cloud DashScope uses `BITGET_QWEN_BASE_URL=https://dashscope-intl.aliyuncs.com/compatible-mode/v1`; Bitget gateway keys can use `https://hackathon.bitgetops.com/v1`. Without a valid key, Sentinel uses a deterministic fallback parser so the demo is reproducible.
 
 ## Demo flow
 
