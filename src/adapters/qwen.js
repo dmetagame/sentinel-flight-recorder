@@ -2,6 +2,8 @@ import { mergePolicy } from "../core/policy.js";
 
 const DEFAULT_BASE_URL = "https://hackathon.bitgetops.com/v1";
 const DEFAULT_MODEL = "qwen3.6-plus";
+const DEFAULT_COMPILE_TIMEOUT_MS = 12_000;
+const DEFAULT_EXPLAIN_TIMEOUT_MS = 3_000;
 
 export function compilePolicyFromText(text, basePolicy = {}) {
   const policy = mergePolicy(basePolicy);
@@ -55,6 +57,7 @@ export async function compilePolicy(text, basePolicy = {}, env = process.env) {
       apiKey,
       baseUrl: env.BITGET_QWEN_BASE_URL ?? DEFAULT_BASE_URL,
       model: env.BITGET_QWEN_MODEL ?? DEFAULT_MODEL,
+      timeoutMs: timeoutMsFromEnv(env.BITGET_QWEN_TIMEOUT_MS, DEFAULT_COMPILE_TIMEOUT_MS),
       messages: [
         {
           role: "system",
@@ -120,6 +123,7 @@ export async function explainDecisionWithQwen(result, env = process.env) {
       apiKey,
       baseUrl: env.BITGET_QWEN_BASE_URL ?? DEFAULT_BASE_URL,
       model: env.BITGET_QWEN_MODEL ?? DEFAULT_MODEL,
+      timeoutMs: timeoutMsFromEnv(env.BITGET_QWEN_EXPLAIN_TIMEOUT_MS, DEFAULT_EXPLAIN_TIMEOUT_MS),
       messages: [
         {
           role: "system",
@@ -149,7 +153,7 @@ export async function explainDecisionWithQwen(result, env = process.env) {
   }
 }
 
-async function callQwen({ apiKey, baseUrl, model, messages }) {
+async function callQwen({ apiKey, baseUrl, model, messages, timeoutMs }) {
   const response = await fetch(`${baseUrl.replace(/\/$/, "")}/chat/completions`, {
     method: "POST",
     headers: {
@@ -161,7 +165,7 @@ async function callQwen({ apiKey, baseUrl, model, messages }) {
       messages,
       temperature: 0.1
     }),
-    signal: AbortSignal.timeout(12_000)
+    signal: AbortSignal.timeout(timeoutMs)
   });
 
   if (!response.ok) {
@@ -217,4 +221,9 @@ function requireObject(value) {
 
 function objectOrEmpty(value) {
   return value && typeof value === "object" && !Array.isArray(value) ? value : {};
+}
+
+function timeoutMsFromEnv(value, fallback) {
+  const parsed = Number(value);
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback;
 }
