@@ -10,7 +10,7 @@ export class SentinelGate {
     this.policy = mergePolicy(policy);
     this.state = state;
     this.now = now ?? (() => Date.now());
-    this.executor = executor ?? new PaperExecutor({ state: this.state });
+    this.executor = executor ?? new PaperExecutor({ state: this.state, now: this.now });
     this.receipts = [];
   }
 

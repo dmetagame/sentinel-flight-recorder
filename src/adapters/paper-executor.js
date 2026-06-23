@@ -2,8 +2,11 @@ import { randomUUID } from "node:crypto";
 import { round } from "../core/math.js";
 
 export class PaperExecutor {
-  constructor({ state }) {
+  constructor({ state, now = () => Date.now(), idFactory = () => randomUUID() }) {
     this.state = state;
+    this.now = now;
+    this.idFactory = idFactory;
+    this.sequence = 0;
   }
 
   async execute(intent) {
@@ -14,7 +17,8 @@ export class PaperExecutor {
       };
     }
 
-    const orderId = `paper_${randomUUID()}`;
+    this.sequence += 1;
+    const orderId = `paper_${this.idFactory(intent, this.sequence)}`;
     const position = {
       orderId,
       symbol: intent.symbol,
@@ -25,7 +29,7 @@ export class PaperExecutor {
       leverage: Number(intent.leverage ?? 1),
       stopLossPrice: intent.stopLossPrice,
       takeProfitPrice: intent.takeProfitPrice,
-      openedAt: new Date().toISOString()
+      openedAt: new Date(this.now()).toISOString()
     };
 
     this.state.positions.push(position);

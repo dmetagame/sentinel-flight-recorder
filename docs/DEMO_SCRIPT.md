@@ -49,7 +49,7 @@ Point out:
 
 ## 2:20 - 2:50
 
-Show `artifacts/flight-receipts.jsonl`.
+Show `evidence/benchmark/flight-receipts.jsonl`.
 
 "Every agent action has a flight-recorder receipt: policy hash, intent hash, decision hash, execution hash, and receipt hash."
 

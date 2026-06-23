@@ -37,14 +37,15 @@ export function localToolList() {
       }
     },
     {
-      name: "account_transfer",
+      name: "transfer",
       description: "Account transfer. Blocked by default Sentinel policy.",
       inputSchema: {
         type: "object",
         properties: {
-          asset: { type: "string" },
+          coin: { type: "string" },
           amount: { type: "string" }
-        }
+        },
+        required: ["coin", "amount"]
       }
     }
   ];

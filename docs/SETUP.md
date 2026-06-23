@@ -8,6 +8,9 @@
 ## Local Run
 
 ```bash
+git clone https://github.com/dmetagame/sentinel-flight-recorder.git
+cd sentinel-flight-recorder
+npm ci
 npm test
 npm run bench
 npm run demo
@@ -61,9 +64,9 @@ curl -sS -X POST http://127.0.0.1:8787/api/tool-call \
     "toolCall": {
       "id": "demo-transfer",
       "agentId": "agent",
-      "name": "account_transfer",
+      "name": "transfer",
       "arguments": {
-        "asset": "USDT",
+        "coin": "USDT",
         "amount": "1000"
       }
     }
@@ -96,11 +99,11 @@ Without an upstream process, it exposes local Sentinel demo tools. To proxy to a
 
 ```bash
 export SENTINEL_UPSTREAM_COMMAND="npx"
-export SENTINEL_UPSTREAM_ARGS="-y bitget-mcp-server"
+export SENTINEL_UPSTREAM_ARGS="-y bitget-mcp-server --modules spot,futures,account --read-only"
 npm run mcp:proxy
 ```
 
-For local development, use paper/read-only exchange credentials wherever possible. Sentinel blocks dangerous write calls before forwarding, but upstream credentials still need least privilege.
+Remove `--read-only` only when testing mapped write tools with paper, testnet, or least-privilege credentials. Sentinel trusts explicit upstream `readOnlyHint` annotations, maps supported execution tools, and fails closed for every other write or unannotated tool.
 
 To run the optional child-process MCP integration test in a normal local shell:
 
@@ -108,4 +111,4 @@ To run the optional child-process MCP integration test in a normal local shell:
 RUN_STDIO_MCP_TESTS=1 npm test
 ```
 
-The default test suite always covers MCP framing. The child-process test is opt-in because some managed sandboxes do not deliver stdio reliably for long-running spawned Node processes.
+The default local suite covers framing and adapter behavior. CI also enables the child-process test, which launches Sentinel in front of an annotated fake upstream and verifies read, block, and fail-closed behavior end to end.

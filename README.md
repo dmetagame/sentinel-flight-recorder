@@ -19,7 +19,20 @@ agent  ───►  Sentinel (MCP server)  ───►  upstream tool catalog
                   └── Merkle root over the batch
 ```
 
-## Drop it in front of any agent in 30 seconds
+## Install and verify
+
+```bash
+git clone https://github.com/dmetagame/sentinel-flight-recorder.git
+cd sentinel-flight-recorder
+npm ci
+npm test
+npm run bench
+npm run dev
+```
+
+Open http://127.0.0.1:8787. The runtime itself uses only Node.js built-ins; the development dependencies generate brand assets.
+
+## Put it in front of Bitget Agent Hub
 
 Add Sentinel to your Claude Desktop / Cursor / Cline MCP config:
 
@@ -30,15 +43,18 @@ Add Sentinel to your Claude Desktop / Cursor / Cline MCP config:
       "command": "node",
       "args": ["/absolute/path/to/sentinel-flight-recorder/src/mcp-proxy.js"],
       "env": {
-        "SENTINEL_UPSTREAM_COMMAND": "node",
-        "SENTINEL_UPSTREAM_ARGS": "fixtures/fake-mcp-upstream.js"
+        "SENTINEL_UPSTREAM_COMMAND": "npx",
+        "SENTINEL_UPSTREAM_ARGS": "-y bitget-mcp-server --modules spot,futures,account",
+        "BITGET_API_KEY": "your-api-key",
+        "BITGET_SECRET_KEY": "your-secret-key",
+        "BITGET_PASSPHRASE": "your-passphrase"
       }
     }
   }
 }
 ```
 
-That's the whole integration. The agent calls `tools/list` and sees the upstream catalog (with each description prefixed `[Sentinel guarded]`). Every `tools/call` is routed through the policy gate. Read-only calls pass through. Execution calls are allowed, rewritten, or blocked, and every decision is hashed into a receipt you can audit later.
+The agent calls `tools/list` and sees the official Agent Hub catalog with each description prefixed `[Sentinel guarded]`. Every `tools/call` is routed through the policy gate. Tools explicitly marked `readOnlyHint: true` pass through with a receipt. Mapped execution calls are allowed, rewritten, or blocked. Any write tool without a safe adapter is blocked by default.
 
 Run without an upstream and Sentinel falls back to a built-in tool catalog so you can demo the gate on its own.
 
@@ -61,11 +77,11 @@ npm run dev        # local cockpit on http://127.0.0.1:8787
 
 Every run writes:
 
-- `artifacts/flight-receipts.jsonl` — one JSON line per decision with `policyHash`, `intentHash`, `decisionHash`, `executionHash`, `receiptHash`
-- `artifacts/bench-report.md` — pass/fail per scenario
-- `artifacts/receipt-merkle-root.txt` — Merkle root over the batch
+- [`evidence/benchmark/flight-receipts.jsonl`](evidence/benchmark/flight-receipts.jsonl) — one JSON line per decision with `policyHash`, `intentHash`, `decisionHash`, `executionHash`, `receiptHash`
+- [`evidence/benchmark/bench-report.md`](evidence/benchmark/bench-report.md) — pass/fail per scenario and reproduction command
+- [`evidence/benchmark/receipt-merkle-root.txt`](evidence/benchmark/receipt-merkle-root.txt) — Merkle root over the batch
 
-The current root in this repo is `cd344723c76f61085c9d9047a522468fc2f5cd08bf4d14f4ea3efe339aabfbfa`. A demo run can be referenced as that tamper-evident batch.
+The tracked benchmark is deterministic. Its Merkle root is `8e45148733c5dce6b21642ce4d419491a5a9a647b61fb58c2fcd0810895de261`; rerunning `npm run bench` reproduces the same evidence.
 
 ## Why this is Track 2 (Trading Infra)
 
@@ -89,19 +105,19 @@ This is not a trading bot. It is infrastructure any trading bot can plug into.
 | `futures_place_order` | `place_order` | risk + leverage + SL + slippage + duplicate checks |
 | `futures_modify_order` | `modify_order` | same as place_order |
 | `futures_set_leverage` | `set_leverage` | capped to `policy.trade.maxLeverage` |
-| `spot_place_order` | `place_order` | risk + slippage + duplicate checks |
-| `account_transfer` | `transfer` | blocked unless `policy.security.allowTransfers` |
+| `spot_place_order` | `place_order` | blocked when the policy requires an atomic stop loss |
+| `transfer` (`account_transfer` alias) | `transfer` | blocked unless `policy.security.allowTransfers` |
 | `withdraw` | `withdraw` | blocked by default |
 
-Anything outside this set is treated as read-only and passes straight through.
+Read-only status comes from the upstream MCP tool annotation. Unmapped write tools, missing annotations, and batch orders fail closed instead of bypassing policy.
 
 ## MCP proxy in front of an upstream
 
-Point Sentinel at any stdio MCP server (a Bitget Agent Hub MCP, a Bitget testnet MCP, the bundled fake upstream, anything):
+Point Sentinel at the official Bitget Agent Hub MCP server:
 
 ```bash
-export SENTINEL_UPSTREAM_COMMAND="node"
-export SENTINEL_UPSTREAM_ARGS="fixtures/fake-mcp-upstream.js"
+export SENTINEL_UPSTREAM_COMMAND="npx"
+export SENTINEL_UPSTREAM_ARGS="-y bitget-mcp-server --modules spot,futures,account --read-only"
 npm run mcp:proxy
 ```
 
@@ -152,12 +168,12 @@ src/
   server.js             dashboard + REST cockpit
   core/                 gate, policy, risk, hash, merkle, audit, state
   adapters/             agent-hub, qwen, paper-executor, upstream-mcp
-  mcp/                  stdio framing + known-tools fallback
+  mcp/                  standards-compliant stdio framing + local tools
   bench/                20-scenario adversarial benchmark
 api/                    Vercel function shims around the core
 public/                 vanilla HTML/JS cockpit
 fixtures/               fake upstream MCP for end-to-end demos
-artifacts/              bench output (receipts.jsonl, report.md, merkle root)
+evidence/benchmark/     tracked reproducible receipts, report, and Merkle root
 docs/                   SETUP, DEPLOYMENT, DEMO_SCRIPT
 ```
 

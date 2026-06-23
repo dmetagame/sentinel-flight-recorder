@@ -22,7 +22,32 @@ const buffer = new McpMessageBuffer((message) => {
         {
           name: "futures_place_order",
           description: "Fake futures order",
-          inputSchema: { type: "object" }
+          inputSchema: { type: "object" },
+          annotations: { readOnlyHint: false, destructiveHint: true }
+        },
+        {
+          name: "futures_modify_order",
+          description: "Fake futures order modification",
+          inputSchema: { type: "object" },
+          annotations: { readOnlyHint: false, destructiveHint: true }
+        },
+        {
+          name: "futures_cancel_orders",
+          description: "Unsupported fake write tool",
+          inputSchema: { type: "object" },
+          annotations: { readOnlyHint: false, destructiveHint: true }
+        },
+        {
+          name: "transfer",
+          description: "Fake account transfer",
+          inputSchema: { type: "object" },
+          annotations: { readOnlyHint: false, destructiveHint: true }
+        },
+        {
+          name: "futures_get_ticker",
+          description: "Fake read-only ticker",
+          inputSchema: { type: "object" },
+          annotations: { readOnlyHint: true, destructiveHint: false }
         }
       ]
     });

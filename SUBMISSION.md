@@ -12,7 +12,50 @@ Sentinel is the safety control plane that lets any MCP-speaking trading agent pr
 
 https://sentinel-flight-recorder.vercel.app
 
-## 200-Word Project Description
+## Project Description (Submission Structure)
+
+### 1. Idea
+
+Autonomous trading agents can call exchange tools faster than a human can inspect them, but the model that proposes a trade should not also be the final authority that approves it. Sentinel Flight Recorder is an MCP-native control plane placed between an agent and Bitget Agent Hub. It converts supported execution calls into normalized intents, evaluates them with deterministic policy, then allows, repairs, or blocks them before forwarding.
+
+The policy covers per-trade risk, leverage, required stop loss, allowed symbols, price deviation, slippage, duplicate calls, total exposure, daily loss, consecutive losses, transfers, and withdrawals. Qwen translates natural-language mandates into policy overrides and explains decisions. It cannot enable transfers and it never performs final authorization. Every decision receives content-addressed hashes and the benchmark receipts are committed under one reproducible Merkle root.
+
+### 2. Progress
+
+The main engineering challenge was separating probabilistic interpretation from deterministic authorization. We solved it by limiting Qwen to policy compilation and explanation while keeping execution decisions in a testable JavaScript risk engine. The second challenge was MCP safety: Agent Hub exposes read/write annotations, so Sentinel passes only tools explicitly marked read-only, maps supported execution shapes, and fails closed for unannotated or unsupported writes. The third challenge was verifiable evidence; deterministic paper IDs and timestamps now make the 20-case receipt bundle and Merkle root reproducible across runs.
+
+Completed:
+
+- standards-compliant newline-delimited stdio MCP proxy
+- official Agent Hub `tools/list` annotation handling
+- adapters for futures place/modify/leverage, spot place, transfer, and withdraw
+- deterministic policy engine, paper executor, receipts, and Merkle benchmark
+- Qwen policy compiler/explainer with deterministic fallback
+- public cockpit, REST examples, automated tests, CI, and frozen usage evidence
+
+Current limitations and next steps:
+
+- paper execution is the default; no real funds are needed or used for the submission
+- batch orders are blocked until each member can be independently evaluated
+- unsupported Agent Hub write tools fail closed rather than receiving partial protection
+- stale-data and price-deviation checks require market context supplied with the guarded call
+- next work is trusted market-data enrichment, additional write-tool adapters, and persistent receipt storage
+
+Stack and APIs: Node.js 20+ ESM, MCP JSON-RPC over stdio, Bitget Agent Hub / `bitget-mcp-server`, Alibaba Qwen `qwen3.6-plus`, Vercel Functions, GitHub Actions, and vanilla HTML/CSS/JavaScript.
+
+### 3. Materials
+
+- GitHub: https://github.com/dmetagame/sentinel-flight-recorder
+- Live demo: https://sentinel-flight-recorder.vercel.app
+- Reproducible usage record: https://github.com/dmetagame/sentinel-flight-recorder/tree/main/evidence/benchmark
+- CI: https://github.com/dmetagame/sentinel-flight-recorder/actions/workflows/ci.yml
+- Installation and integration: https://github.com/dmetagame/sentinel-flight-recorder#install-and-verify
+
+### 4. AI Trading Thoughts (Optional)
+
+Agentic trading needs a separation of duties similar to mature financial infrastructure: models can perceive, propose, and explain, while deterministic systems authorize and record. MCP makes that boundary portable across agents, and machine-readable read/write annotations let safety middleware adapt without depending only on tool names. The next useful Agent Hub primitive would be a standard pre-execution context containing fresh market data, account exposure, and declared risk so control planes can verify every write consistently.
+
+## Short Project Description (199 Words)
 
 Sentinel Flight Recorder is an MCP-native execution-control plane for autonomous trading agents. It is a stdio MCP server that drops between any MCP-speaking agent and any upstream tool catalog — Bitget Agent Hub, a Bitget testnet adapter, a paper executor — and inspects every execution call against a deterministic policy engine before it can reach the exchange.
 
@@ -28,7 +71,7 @@ Word count: 199
 
 - It is infrastructure for other AI trading agents, not a standalone strategy
 - It speaks MCP, so any compliant agent (Claude Desktop, Cursor, Cline, custom) can adopt it with a one-line config change
-- It maps directly to Bitget Agent Hub tool shapes (`futures_place_order`, `futures_modify_order`, `futures_set_leverage`, `spot_place_order`, `account_transfer`, `withdraw`)
+- It maps directly to Bitget Agent Hub tool shapes (`futures_place_order`, `futures_modify_order`, `futures_set_leverage`, `spot_place_order`, `transfer`, `withdraw`)
 - It solves a real pain point: autonomous agents will make unsafe execution calls and most teams have no paper trail to figure out what happened
 - It produces verifiable evidence: 20/20 adversarial scenarios passing, plus per-decision receipts hashed into a Merkle root
 
@@ -55,8 +98,8 @@ Add to any MCP client config (Claude Desktop shown):
       "command": "node",
       "args": ["/abs/path/to/sentinel-flight-recorder/src/mcp-proxy.js"],
       "env": {
-        "SENTINEL_UPSTREAM_COMMAND": "node",
-        "SENTINEL_UPSTREAM_ARGS": "fixtures/fake-mcp-upstream.js"
+        "SENTINEL_UPSTREAM_COMMAND": "npx",
+        "SENTINEL_UPSTREAM_ARGS": "-y bitget-mcp-server --modules spot,futures,account --read-only"
       }
     }
   }
@@ -85,8 +128,8 @@ npm run mcp:proxy
 Proxy in front of any upstream MCP:
 
 ```bash
-export SENTINEL_UPSTREAM_COMMAND="node"
-export SENTINEL_UPSTREAM_ARGS="fixtures/fake-mcp-upstream.js"
+export SENTINEL_UPSTREAM_COMMAND="npx"
+export SENTINEL_UPSTREAM_ARGS="-y bitget-mcp-server --modules spot,futures,account --read-only"
 npm run mcp:proxy
 ```
 
@@ -106,9 +149,9 @@ npm run mcp:proxy
 
 Generated by `npm run bench`:
 
-- `artifacts/bench-report.md` — 20/20 pass rate, per-scenario verdict table
-- `artifacts/flight-receipts.jsonl` — one JSON line per decision
-- `artifacts/receipt-merkle-root.txt` — Merkle root over the batch (current: `cd344723c76f61085c9d9047a522468fc2f5cd08bf4d14f4ea3efe339aabfbfa`)
+- `evidence/benchmark/bench-report.md` — 20/20 pass rate, per-scenario verdict table
+- `evidence/benchmark/flight-receipts.jsonl` — one JSON line per decision
+- `evidence/benchmark/receipt-merkle-root.txt` — reproducible Merkle root: `8e45148733c5dce6b21642ce4d419491a5a9a647b61fb58c2fcd0810895de261`
 
 Benchmark coverage (20 scenarios across 11 categories):
 

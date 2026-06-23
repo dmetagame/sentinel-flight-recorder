@@ -14,16 +14,19 @@ const publicRoot = join(root, "public");
 const port = Number(process.env.PORT ?? 8787);
 const host = process.env.HOST ?? "127.0.0.1";
 const sharedState = createInitialState();
+const maxJsonBodyBytes = 1_000_000;
 
 const server = http.createServer(async (req, res) => {
   try {
-    if (req.url === "/api/bench") {
+    const requestPath = String(req.url ?? "/").split(/[?#]/, 1)[0];
+
+    if (req.method === "GET" && requestPath === "/api/bench") {
       const payload = await runBenchmark({ writeArtifacts: false });
       sendJson(res, payload);
       return;
     }
 
-    if (req.method === "POST" && req.url === "/api/compile-policy") {
+    if (req.method === "POST" && requestPath === "/api/compile-policy") {
       const body = await readJsonOrBadRequest(req, res);
       if (body === null) return;
       if (typeof body.text !== "string" || !body.text.trim()) {
@@ -34,7 +37,7 @@ const server = http.createServer(async (req, res) => {
       return;
     }
 
-    if (req.method === "POST" && req.url === "/api/evaluate") {
+    if (req.method === "POST" && requestPath === "/api/evaluate") {
       const body = await readJsonOrBadRequest(req, res);
       if (body === null) return;
       if (!body.intent) {
@@ -54,7 +57,7 @@ const server = http.createServer(async (req, res) => {
       return;
     }
 
-    if (req.method === "POST" && req.url === "/api/tool-call") {
+    if (req.method === "POST" && requestPath === "/api/tool-call") {
       const body = await readJsonOrBadRequest(req, res);
       if (body === null) return;
       if (!body.toolCall || !body.toolCall.name) {
@@ -71,6 +74,11 @@ const server = http.createServer(async (req, res) => {
       const result = await guardedToolCall(gate, body.toolCall);
       const explanation = await explainDecisionWithQwen(result.sentinel);
       sendJson(res, { ...result, explanation, compiledPolicy: compiled });
+      return;
+    }
+
+    if (requestPath.startsWith("/api/")) {
+      sendJsonStatus(res, 405, { error: "Method not allowed" });
       return;
     }
 
@@ -100,7 +108,11 @@ function sendJsonStatus(res, statusCode, payload) {
 async function readJsonOrBadRequest(req, res) {
   try {
     return await readJson(req);
-  } catch {
+  } catch (error) {
+    if (error?.statusCode === 413) {
+      sendJsonStatus(res, 413, { error: "Payload too large" });
+      return null;
+    }
     sendJsonStatus(res, 400, { error: "Invalid JSON body" });
     return null;
   }
@@ -129,6 +141,8 @@ function messageForStatus(statusCode) {
       return "Forbidden";
     case 404:
       return "Not found";
+    case 413:
+      return "Payload too large";
     default:
       return "Internal server error";
   }
@@ -136,7 +150,14 @@ function messageForStatus(statusCode) {
 
 async function readJson(req) {
   const chunks = [];
+  let totalBytes = 0;
   for await (const chunk of req) {
+    totalBytes += chunk.length;
+    if (totalBytes > maxJsonBodyBytes) {
+      const error = new Error("Payload too large");
+      error.statusCode = 413;
+      throw error;
+    }
     chunks.push(chunk);
   }
   const raw = Buffer.concat(chunks).toString("utf8");

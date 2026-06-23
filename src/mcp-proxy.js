@@ -12,6 +12,7 @@ const state = createInitialState();
 const gate = new SentinelGate({ policy, state });
 const upstream = createUpstreamFromEnv();
 let upstreamInitialized = false;
+let upstreamTools = null;
 
 const buffer = new McpMessageBuffer((message) => {
   handleMessage(message).catch((error) => {
@@ -78,8 +79,7 @@ async function getTools() {
     return localToolList();
   }
 
-  await ensureUpstream();
-  const tools = await upstream.listTools();
+  const tools = await getUpstreamTools();
   return tools.map((tool) => ({
     ...tool,
     description: `[Sentinel guarded] ${tool.description ?? ""}`.trim()
@@ -91,8 +91,14 @@ async function callGuardedTool(toolCall) {
     return guardedToolCall(gate, toolCall);
   }
 
-  await ensureUpstream();
-  return guardedToolCall(gate, toolCall, createMcpNextTool(upstream));
+  const tools = await getUpstreamTools();
+  const metadata = tools.find((tool) => tool.name === toolCall.name);
+  return guardedToolCall(
+    gate,
+    toolCall,
+    createMcpNextTool(upstream),
+    { readOnly: metadata?.annotations?.readOnlyHint === true }
+  );
 }
 
 async function ensureUpstream() {
@@ -104,20 +110,29 @@ async function ensureUpstream() {
   upstreamInitialized = true;
 }
 
+async function getUpstreamTools() {
+  await ensureUpstream();
+  if (!upstreamTools) {
+    upstreamTools = await upstream.listTools();
+  }
+  return upstreamTools;
+}
+
 function asMcpToolResult(result) {
   const isBlocked = result.blocked === true;
+  const sentinel = result.sentinel;
   return {
     isError: isBlocked,
     content: [
       {
         type: "text",
         text: JSON.stringify({
-          sentinel: {
-            verdict: result.sentinel.decision.verdict,
-            violations: result.sentinel.decision.violations,
-            modifications: result.sentinel.decision.modifications,
-            receiptHash: result.sentinel.receipt.receiptHash
-          },
+          sentinel: sentinel ? {
+            verdict: sentinel.decision.verdict,
+            violations: sentinel.decision.violations,
+            modifications: sentinel.decision.modifications,
+            receiptHash: sentinel.receipt.receiptHash
+          } : null,
           upstream: result.upstream ?? null
         }, null, 2)
       }
@@ -139,7 +154,7 @@ function logVerdict(toolName, result) {
     return;
   }
   const verdict = result.sentinel.decision?.verdict ?? "unknown";
-  const receipt = result.sentinel.receipt?.receiptHash?.slice(0, 12) ?? "—";
+  const receipt = result.sentinel.receipt?.receiptHash?.slice(0, 12) ?? "-";
   const violations = result.sentinel.decision?.violations ?? [];
   const codes = violations.map((v) => v.code).filter(Boolean).join(",");
   const tail = codes ? ` codes=${codes}` : "";

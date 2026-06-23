@@ -37,9 +37,9 @@ test("serverless tool-call endpoint blocks unsafe transfer", async () => {
       toolCall: {
         id: "api-transfer",
         agentId: "agent",
-        name: "account_transfer",
+        name: "transfer",
         arguments: {
-          asset: "USDT",
+          coin: "USDT",
           amount: "1000"
         }
       }

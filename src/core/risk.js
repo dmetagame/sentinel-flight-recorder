@@ -15,8 +15,17 @@ export function evaluateIntent(intent, policy, state, now = Date.now()) {
   const modifications = [];
   let nextIntent = { ...normalized };
 
+  if (normalized.type === "unsupported_write") {
+    violations.push({
+      code: normalized.reasonCode ?? "UNSUPPORTED_WRITE_TOOL",
+      severity: "critical",
+      message: normalized.reason ?? `Write tool ${normalized.tool ?? "unknown"} is not safely mapped by Sentinel.`
+    });
+    return decision("block", nextIntent, violations, modifications);
+  }
+
   if (!EXECUTION_TYPES.has(normalized.type)) {
-    return decision("allow", nextIntent, violations, modifications, "Read-only or unknown-safe call.");
+    return decision("allow", nextIntent, violations, modifications, "Verified read-only call.");
   }
 
   if (normalized.type === "transfer" || normalized.type === "withdraw") {
@@ -25,6 +34,14 @@ export function evaluateIntent(intent, policy, state, now = Date.now()) {
         code: "TRANSFER_BLOCKED",
         severity: "critical",
         message: "Transfers and withdrawals are disabled by Sentinel policy."
+      });
+      return decision("block", nextIntent, violations, modifications);
+    }
+    if (!normalized.asset || !Number.isFinite(Number(normalized.amount)) || Number(normalized.amount) <= 0) {
+      violations.push({
+        code: "ASSET_MOVEMENT_INVALID",
+        severity: "high",
+        message: "Transfers and withdrawals require an asset and a positive amount."
       });
       return decision("block", nextIntent, violations, modifications);
     }
@@ -38,11 +55,51 @@ export function evaluateIntent(intent, policy, state, now = Date.now()) {
     return decision("allow", nextIntent, violations, modifications);
   }
 
+  if (policy.trade.requireStopLoss && nextIntent.supportsAttachedStopLoss === false) {
+    violations.push({
+      code: "STOP_LOSS_UNSUPPORTED",
+      severity: "high",
+      message: `${nextIntent.tool} cannot attach a stop loss atomically under the active policy.`
+    });
+  }
+
   if (!nextIntent.symbol) {
     violations.push({
       code: "SYMBOL_REQUIRED",
       severity: "high",
       message: "Execution intents must include a symbol."
+    });
+  }
+
+  if (nextIntent.side !== "buy" && nextIntent.side !== "sell") {
+    violations.push({
+      code: "SIDE_REQUIRED",
+      severity: "high",
+      message: "Execution intents must use side buy or sell."
+    });
+  }
+
+  if (nextIntent.orderType !== "market" && nextIntent.orderType !== "limit") {
+    violations.push({
+      code: "ORDER_TYPE_REQUIRED",
+      severity: "high",
+      message: "Execution intents must use orderType market or limit."
+    });
+  }
+
+  if (!Number.isFinite(nextIntent.leverage) || nextIntent.leverage <= 0) {
+    violations.push({
+      code: "LEVERAGE_INVALID",
+      severity: "high",
+      message: "Execution intents must include a positive finite leverage value."
+    });
+  }
+
+  if (!Number.isFinite(Number(state.account.equityUsd)) || Number(state.account.equityUsd) <= 0) {
+    violations.push({
+      code: "ACCOUNT_EQUITY_INVALID",
+      severity: "critical",
+      message: "Risk cannot be evaluated without positive account equity."
     });
   }
 
@@ -162,6 +219,23 @@ export function evaluateIntent(intent, policy, state, now = Date.now()) {
     }
   }
 
+  if (nextIntent.stopLossPrice !== undefined) {
+    const stop = Number(nextIntent.stopLossPrice);
+    const entry = Number(nextIntent.price);
+    const wrongSide = nextIntent.side === "buy" ? stop >= entry : stop <= entry;
+    if (!Number.isFinite(stop) || stop <= 0 || wrongSide) {
+      violations.push({
+        code: "STOP_LOSS_INVALID",
+        severity: "high",
+        message: "Stop loss must be positive and on the loss side of the entry price."
+      });
+    }
+  }
+
+  if (violations.some((item) => item.severity === "critical" || item.severity === "high")) {
+    return decision("block", nextIntent, violations, modifications);
+  }
+
   const risk = calculateTradeRisk(nextIntent, state);
   nextIntent.risk = risk;
 
@@ -222,7 +296,16 @@ export function evaluateIntent(intent, policy, state, now = Date.now()) {
 }
 
 function evaluateLeverageIntent(intent, policy, violations, modifications) {
-  if (Number(intent.leverage ?? 1) > policy.trade.maxLeverage) {
+  if (!intent.symbol || !Number.isFinite(Number(intent.leverage)) || Number(intent.leverage) <= 0) {
+    violations.push({
+      code: "LEVERAGE_CHANGE_INVALID",
+      severity: "high",
+      message: "Leverage changes require a symbol and a positive finite leverage value."
+    });
+    return decision("block", intent, violations, modifications);
+  }
+
+  if (Number(intent.leverage) > policy.trade.maxLeverage) {
     violations.push({
       code: "LEVERAGE_CHANGE_BLOCKED",
       severity: "high",
@@ -242,7 +325,7 @@ function normalizeIntent(intent) {
   return {
     ...intent,
     type: intent.type ?? "place_order",
-    side: intent.side ?? "buy",
+    side: intent.side,
     orderType: intent.orderType ?? "market",
     leverage: Number(intent.leverage ?? 1),
     price,
@@ -255,7 +338,7 @@ function deriveStopLoss(intent, policy) {
   const price = Number(intent.price);
   const distance = price * (policy.trade.defaultStopLossPct / 100);
   const side = intent.side === "sell" || intent.side === "short" ? "short" : "long";
-  return round(side === "long" ? price - distance : price + distance, 2);
+  return round(side === "long" ? price - distance : price + distance, 8);
 }
 
 function calculateTradeRisk(intent, state) {

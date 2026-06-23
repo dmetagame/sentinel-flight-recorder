@@ -5,6 +5,7 @@ import { SentinelGate } from "../core/gate.js";
 import { createInitialState } from "../core/state.js";
 import { mergePolicy } from "../core/policy.js";
 import { merkleRoot } from "../core/merkle.js";
+import { PaperExecutor } from "../adapters/paper-executor.js";
 import { scenarios, BENCHMARK_NOW } from "./scenarios.js";
 
 export async function runBenchmark({ writeArtifacts = true } = {}) {
@@ -15,7 +16,12 @@ export async function runBenchmark({ writeArtifacts = true } = {}) {
     const gate = new SentinelGate({
       policy: mergePolicy(scenario.policyPatch ?? {}),
       state,
-      now: () => BENCHMARK_NOW
+      now: () => BENCHMARK_NOW,
+      executor: new PaperExecutor({
+        state,
+        now: () => BENCHMARK_NOW,
+        idFactory: (intent, sequence) => `bench_${intent.id ?? "intent"}_${sequence}`
+      })
     });
 
     if (scenario.duplicateOfPrevious) {
@@ -67,7 +73,7 @@ export function summarize(outputs) {
 }
 
 async function writeBenchmarkArtifacts(outputs, summary) {
-  const root = join(fileURLToPath(new URL("../..", import.meta.url)), "artifacts");
+  const root = join(fileURLToPath(new URL("../..", import.meta.url)), "evidence", "benchmark");
   await mkdir(root, { recursive: true });
 
   const receipts = outputs.map((item) => JSON.stringify(item.result.receipt)).join("\n");
@@ -85,6 +91,8 @@ async function writeBenchmarkArtifacts(outputs, summary) {
     `- Modified: ${summary.modified}`,
     `- Blocked: ${summary.blocked}`,
     `- Receipt Merkle root: \`${summary.receiptMerkleRoot}\``,
+    `- Benchmark clock: \`${new Date(BENCHMARK_NOW).toISOString()}\``,
+    "- Reproduce: `npm run bench`",
     "",
     "| Scenario | Expected | Actual | Result |",
     "|---|---:|---:|---|",

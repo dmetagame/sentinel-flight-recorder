@@ -77,7 +77,7 @@ export async function compilePolicy(text, basePolicy = {}, env = process.env) {
 
     const overrides = parseJsonObject(response);
     return {
-      policy: mergePolicy({ ...base, ...overrides, security: { ...base.security, ...(overrides.security ?? {}), allowTransfers: false } }),
+      policy: applyPolicyOverrides(base, overrides),
       source: "qwen",
       raw: response
     };
@@ -160,7 +160,8 @@ async function callQwen({ apiKey, baseUrl, model, messages }) {
       model,
       messages,
       temperature: 0.1
-    })
+    }),
+    signal: AbortSignal.timeout(12_000)
   });
 
   if (!response.ok) {
@@ -180,12 +181,40 @@ async function callQwen({ apiKey, baseUrl, model, messages }) {
 function parseJsonObject(text) {
   const trimmed = text.trim();
   try {
-    return JSON.parse(trimmed);
+    return requireObject(JSON.parse(trimmed));
   } catch {
     const match = trimmed.match(/\{[\s\S]*\}/);
     if (!match) {
       throw new Error("Qwen response did not contain a JSON object.");
     }
-    return JSON.parse(match[0]);
+    return requireObject(JSON.parse(match[0]));
   }
+}
+
+function applyPolicyOverrides(base, overrides) {
+  return mergePolicy({
+    ...base,
+    portfolio: { ...base.portfolio, ...objectOrEmpty(overrides.portfolio) },
+    trade: { ...base.trade, ...objectOrEmpty(overrides.trade) },
+    data: { ...base.data, ...objectOrEmpty(overrides.data) },
+    security: {
+      ...base.security,
+      ...objectOrEmpty(overrides.security),
+      allowTransfers: false
+    },
+    allowedSymbols: Array.isArray(overrides.allowedSymbols)
+      ? overrides.allowedSymbols
+      : base.allowedSymbols
+  });
+}
+
+function requireObject(value) {
+  if (!value || typeof value !== "object" || Array.isArray(value)) {
+    throw new Error("Qwen response must be a JSON object.");
+  }
+  return value;
+}
+
+function objectOrEmpty(value) {
+  return value && typeof value === "object" && !Array.isArray(value) ? value : {};
 }
