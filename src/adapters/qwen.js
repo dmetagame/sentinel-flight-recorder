@@ -1,8 +1,8 @@
 import { mergePolicy } from "../core/policy.js";
 
-const DEFAULT_BASE_URL = "https://dashscope-intl.aliyuncs.com/compatible-mode/v1";
+const DEFAULT_BASE_URL = "https://hackathon.bitgetops.com/v1";
 const DEFAULT_MODEL = "qwen3.6-plus";
-const DEFAULT_COMPILE_TIMEOUT_MS = 12_000;
+const DEFAULT_COMPILE_TIMEOUT_MS = 20_000;
 const DEFAULT_EXPLAIN_TIMEOUT_MS = 3_000;
 const PUBLIC_QWEN_ERROR = "Qwen unavailable; deterministic fallback used.";
 

@@ -17,17 +17,28 @@ test("compilePolicy falls back deterministically without an API key", async () =
 
 test("Qwen overrides preserve stricter unspecified base-policy fields", async (t) => {
   const originalFetch = globalThis.fetch;
+  const originalTimeout = AbortSignal.timeout;
+  let requestedUrl;
+  const timeouts = [];
   t.after(() => {
     globalThis.fetch = originalFetch;
+    AbortSignal.timeout = originalTimeout;
   });
-  globalThis.fetch = async () => ({
-    ok: true,
-    async json() {
-      return {
-        choices: [{ message: { content: '{"trade":{"maxRiskPct":0.5},"security":{"allowTransfers":true}}' } }]
-      };
-    }
-  });
+  AbortSignal.timeout = (timeoutMs) => {
+    timeouts.push(timeoutMs);
+    return new AbortController().signal;
+  };
+  globalThis.fetch = async (url) => {
+    requestedUrl = url;
+    return {
+      ok: true,
+      async json() {
+        return {
+          choices: [{ message: { content: '{"trade":{"maxRiskPct":0.5},"security":{"allowTransfers":true}}' } }]
+        };
+      }
+    };
+  };
 
   const result = await compilePolicy("Risk at most 0.5%.", {
     trade: { maxLeverage: 2 },
@@ -41,6 +52,8 @@ test("Qwen overrides preserve stricter unspecified base-policy fields", async (t
   assert.equal(result.policy.trade.maxLeverage, 2);
   assert.equal(result.policy.portfolio.maxDailyLossPct, 1);
   assert.equal(result.policy.security.allowTransfers, false);
+  assert.equal(requestedUrl, "https://hackathon.bitgetops.com/v1/chat/completions");
+  assert.deepEqual(timeouts, [20000]);
 });
 
 test("Qwen fallback does not expose provider error details", async (t) => {
