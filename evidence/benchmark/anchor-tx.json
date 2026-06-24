@@ -1,0 +1,12 @@
+{
+  "schema": "sentinel.anchor.v1",
+  "merkleRoot": "8e45148733c5dce6b21642ce4d419491a5a9a647b61fb58c2fcd0810895de261",
+  "chainId": 97,
+  "chainName": "BSC Testnet",
+  "rpcUrl": "https://data-seed-prebsc-1-s1.binance.org:8545",
+  "signer": "0xD3eed2f7dcED5fbc96Fb1a0FC058C540D50b4f80",
+  "txHash": "0x3121857e2e10986e7e0be2c45a01c4481656485b76946270f1a34b0c0e7cd810",
+  "blockNumber": "115261242",
+  "scanner": "https://testnet.bscscan.com/tx/0x3121857e2e10986e7e0be2c45a01c4481656485b76946270f1a34b0c0e7cd810",
+  "anchoredAt": "2026-06-24T14:29:35.026Z"
+}

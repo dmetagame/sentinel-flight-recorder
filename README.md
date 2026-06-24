@@ -80,19 +80,23 @@ Every run writes:
 - [`evidence/benchmark/flight-receipts.jsonl`](evidence/benchmark/flight-receipts.jsonl) — one JSON line per decision with `policyHash`, `intentHash`, `decisionHash`, `executionHash`, `receiptHash`
 - [`evidence/benchmark/bench-report.md`](evidence/benchmark/bench-report.md) — pass/fail per scenario and reproduction command
 - [`evidence/benchmark/receipt-merkle-root.txt`](evidence/benchmark/receipt-merkle-root.txt) — Merkle root over the batch
+- [`evidence/benchmark/anchor-tx.json`](evidence/benchmark/anchor-tx.json) — BSC testnet anchor for the current root
 
 The tracked benchmark is deterministic. Its Merkle root is `8e45148733c5dce6b21642ce4d419491a5a9a647b61fb58c2fcd0810895de261`; rerunning `npm run bench` reproduces the same evidence.
 
-## Optional on-chain anchor
+## On-chain anchor
 
-The Merkle root can be published on **BSC testnet** as a self-send tx whose calldata is the 32-byte root. That makes the bench-run evidence cryptographically referenceable from outside this repo when an anchor is present.
+The current Merkle root is published on **BSC testnet** as a self-send tx whose calldata is the 32-byte root. That makes the bench-run evidence cryptographically referenceable from outside this repo.
+
+- Tx: `0x3121857e2e10986e7e0be2c45a01c4481656485b76946270f1a34b0c0e7cd810`
+- Explorer: https://testnet.bscscan.com/tx/0x3121857e2e10986e7e0be2c45a01c4481656485b76946270f1a34b0c0e7cd810
 
 ```bash
 export SENTINEL_ANCHOR_PRIVATE_KEY=0x...      # funded BSC testnet wallet
 npm run anchor
 ```
 
-The script writes `evidence/benchmark/anchor-tx.json` with the tx hash, block number, and a BscScan link. This file is optional and is not required for the hackathon evidence bundle; when present, the cockpit's `/api/receipts` endpoint surfaces the anchor alongside the receipts.
+The script writes `evidence/benchmark/anchor-tx.json` with the tx hash, block number, and BscScan link. The cockpit's `/api/receipts` endpoint surfaces the anchor alongside the receipts.
 
 ## Receipts API
 
@@ -100,7 +104,7 @@ The script writes `evidence/benchmark/anchor-tx.json` with the tx hash, block nu
 curl http://127.0.0.1:8787/api/receipts?limit=20
 ```
 
-Returns the bench receipts plus the Merkle root and, when present, the optional anchor tx record. Works identically on the deployed Vercel site.
+Returns the bench receipts plus the Merkle root and anchor tx record. Works identically on the deployed Vercel site.
 
 ## Why this is Track 2 (Trading Infra)
 
