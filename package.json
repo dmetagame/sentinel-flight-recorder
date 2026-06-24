@@ -5,6 +5,7 @@
   "type": "module",
   "private": true,
   "scripts": {
+    "anchor": "node scripts/anchor-merkle.mjs",
     "bench": "node src/bench/run.js",
     "demo": "node src/demo.js",
     "dev": "node src/server.js",
@@ -15,7 +16,8 @@
   },
   "devDependencies": {
     "png-to-ico": "^2.1.8",
-    "sharp": "^0.33.5"
+    "sharp": "^0.33.5",
+    "viem": "^2.53.1"
   },
   "engines": {
     "node": ">=20"

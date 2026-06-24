@@ -83,6 +83,25 @@ Every run writes:
 
 The tracked benchmark is deterministic. Its Merkle root is `8e45148733c5dce6b21642ce4d419491a5a9a647b61fb58c2fcd0810895de261`; rerunning `npm run bench` reproduces the same evidence.
 
+## On-chain anchor
+
+The same Merkle root is published on **BSC testnet** as a self-send tx whose calldata is the 32-byte root. That makes the bench-run evidence cryptographically referenceable from outside this repo.
+
+```bash
+export SENTINEL_ANCHOR_PRIVATE_KEY=0x...      # funded BSC testnet wallet
+npm run anchor
+```
+
+The script writes [`evidence/benchmark/anchor-tx.json`](evidence/benchmark/anchor-tx.json) with the tx hash, block number, and a BscScan link. The cockpit's `/api/receipts` endpoint surfaces the anchor alongside the receipts so the dashboard can show the on-chain proof.
+
+## Receipts API
+
+```bash
+curl http://127.0.0.1:8787/api/receipts?limit=20
+```
+
+Returns the bench receipts plus the Merkle root and (once anchored) the anchor tx record. Works identically on the deployed Vercel site.
+
 ## Why this is Track 2 (Trading Infra)
 
 Bitget Agent Hub exposes execution tools. Sentinel is the missing safety layer those tools need before an autonomous agent can be trusted with them:

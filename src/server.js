@@ -1,7 +1,7 @@
 import http from "node:http";
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
-import { fileURLToPath } from "node:url";
+import { fileURLToPath, URL as NodeURL } from "node:url";
 import { runBenchmark } from "./bench/run.js";
 import { SentinelGate } from "./core/gate.js";
 import { createInitialState } from "./core/state.js";
@@ -11,6 +11,10 @@ import { contentType, resolvePublicPath } from "./http/static.js";
 
 const root = fileURLToPath(new URL("..", import.meta.url));
 const publicRoot = join(root, "public");
+const benchmarkRoot = join(root, "evidence", "benchmark");
+const receiptsFile = join(benchmarkRoot, "flight-receipts.jsonl");
+const merkleRootFile = join(benchmarkRoot, "receipt-merkle-root.txt");
+const anchorFile = join(benchmarkRoot, "anchor-tx.json");
 const port = Number(process.env.PORT ?? 8787);
 const host = process.env.HOST ?? "127.0.0.1";
 const sharedState = createInitialState();
@@ -23,6 +27,13 @@ const server = http.createServer(async (req, res) => {
     if (req.method === "GET" && requestPath === "/api/bench") {
       const payload = await runBenchmark({ writeArtifacts: false });
       sendJson(res, payload);
+      return;
+    }
+
+    if (req.method === "GET" && requestPath === "/api/receipts") {
+      const url = new NodeURL(req.url ?? "/", `http://${host}:${port}`);
+      const limit = parseLimit(url.searchParams.get("limit"));
+      sendJson(res, await loadReceipts(limit));
       return;
     }
 
@@ -162,4 +173,58 @@ async function readJson(req) {
   }
   const raw = Buffer.concat(chunks).toString("utf8");
   return raw ? JSON.parse(raw) : {};
+}
+
+function parseLimit(raw) {
+  const n = Number(raw);
+  if (!Number.isFinite(n) || n <= 0) return 50;
+  return Math.min(Math.floor(n), 500);
+}
+
+async function loadReceipts(limit) {
+  let raw;
+  try {
+    raw = await readFile(receiptsFile, "utf8");
+  } catch {
+    return { receipts: [], total: 0, returned: 0, limit, merkleRoot: null, anchor: null };
+  }
+  const lines = raw.split("\n").filter(Boolean);
+  const start = Math.max(0, lines.length - limit);
+  const slice = lines.slice(start);
+  const receipts = [];
+  for (const line of slice) {
+    try {
+      receipts.push(JSON.parse(line));
+    } catch {
+      // skip malformed line
+    }
+  }
+  const [merkleRoot, anchor] = await Promise.all([
+    readMerkleRootFile(),
+    readAnchorFile()
+  ]);
+  return {
+    receipts,
+    total: lines.length,
+    returned: receipts.length,
+    limit,
+    merkleRoot,
+    anchor
+  };
+}
+
+async function readMerkleRootFile() {
+  try {
+    return (await readFile(merkleRootFile, "utf8")).trim();
+  } catch {
+    return null;
+  }
+}
+
+async function readAnchorFile() {
+  try {
+    return JSON.parse(await readFile(anchorFile, "utf8"));
+  } catch {
+    return null;
+  }
 }
