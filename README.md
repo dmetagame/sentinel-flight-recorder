@@ -6,12 +6,12 @@
 ![Bench](https://img.shields.io/badge/bench-20%2F20%20passing-3DD68C)
 ![Mode](https://img.shields.io/badge/execution-paper--safe-fbbf24)
 
-Sentinel is an MCP-native execution-control plane for autonomous trading agents. It sits as a stdio MCP server between the agent and any upstream tool catalog (Bitget Agent Hub, a paper executor, a Bitget testnet MCP, etc.), inspects every execution call against a deterministic policy engine, and emits a Merkle-sealed receipt for every decision.
+Sentinel is an MCP-native execution-control plane for autonomous trading agents. It sits as a stdio MCP server between the agent and a Bitget Agent Hub-compatible upstream, inspects supported execution calls against a deterministic policy engine, and emits a Merkle-sealed receipt for every decision. Read-only tools from any annotated MCP upstream can pass through with receipts; unmapped write tools fail closed until an adapter is added.
 
 **Live cockpit:** https://sentinel-flight-recorder.vercel.app
 
 ```text
-agent  ───►  Sentinel (MCP server)  ───►  upstream tool catalog
+agent  ───►  Sentinel (MCP server)  ───►  Bitget Agent Hub / compatible upstream
                   │
                   ├── deterministic policy gate
                   ├── idempotency guard
@@ -83,16 +83,16 @@ Every run writes:
 
 The tracked benchmark is deterministic. Its Merkle root is `8e45148733c5dce6b21642ce4d419491a5a9a647b61fb58c2fcd0810895de261`; rerunning `npm run bench` reproduces the same evidence.
 
-## On-chain anchor
+## Optional on-chain anchor
 
-The same Merkle root is published on **BSC testnet** as a self-send tx whose calldata is the 32-byte root. That makes the bench-run evidence cryptographically referenceable from outside this repo.
+The Merkle root can be published on **BSC testnet** as a self-send tx whose calldata is the 32-byte root. That makes the bench-run evidence cryptographically referenceable from outside this repo when an anchor is present.
 
 ```bash
 export SENTINEL_ANCHOR_PRIVATE_KEY=0x...      # funded BSC testnet wallet
 npm run anchor
 ```
 
-The script writes [`evidence/benchmark/anchor-tx.json`](evidence/benchmark/anchor-tx.json) with the tx hash, block number, and a BscScan link. The cockpit's `/api/receipts` endpoint surfaces the anchor alongside the receipts so the dashboard can show the on-chain proof.
+The script writes `evidence/benchmark/anchor-tx.json` with the tx hash, block number, and a BscScan link. This file is optional and is not required for the hackathon evidence bundle; when present, the cockpit's `/api/receipts` endpoint surfaces the anchor alongside the receipts.
 
 ## Receipts API
 
@@ -100,7 +100,7 @@ The script writes [`evidence/benchmark/anchor-tx.json`](evidence/benchmark/ancho
 curl http://127.0.0.1:8787/api/receipts?limit=20
 ```
 
-Returns the bench receipts plus the Merkle root and (once anchored) the anchor tx record. Works identically on the deployed Vercel site.
+Returns the bench receipts plus the Merkle root and, when present, the optional anchor tx record. Works identically on the deployed Vercel site.
 
 ## Why this is Track 2 (Trading Infra)
 
@@ -111,7 +111,7 @@ Bitget Agent Hub exposes execution tools. Sentinel is the missing safety layer t
 - daily-loss and consecutive-loss circuit breakers
 - transfer and withdraw blocking by default
 - adversarial benchmark with reproducible Merkle-rooted evidence
-- one-line MCP integration for any agent in the ecosystem
+- one-line MCP integration for MCP-speaking agents in the Bitget ecosystem
 
 This is not a trading bot. It is infrastructure any trading bot can plug into.
 

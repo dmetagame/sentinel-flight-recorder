@@ -74,7 +74,8 @@ test("Qwen fallback does not expose provider error details", async (t) => {
   });
 
   const result = await compilePolicy("Risk at most 0.5%.", {}, {
-    BITGET_QWEN_API_KEY: "test-key"
+    BITGET_QWEN_API_KEY: "test-key",
+    SENTINEL_SUPPRESS_QWEN_LOGS: "1"
   });
 
   assert.equal(result.source, "deterministic-fallback-after-qwen-error");

@@ -27,6 +27,9 @@ jobs:
       - name: Run Sentinel Bench
         run: npm run bench
 
+      - name: Verify benchmark evidence is committed
+        run: git diff --exit-code -- evidence/benchmark/
+
       - name: Upload benchmark artifacts
         uses: actions/upload-artifact@v4
         with:

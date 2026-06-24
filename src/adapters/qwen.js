@@ -88,6 +88,7 @@ export async function compilePolicy(text, basePolicy = {}, env = process.env) {
       raw: response
     };
   } catch (error) {
+    logQwenError("compilePolicy", error, env);
     const fallback = compilePolicyFromText(text, basePolicy);
     return {
       ...fallback,
@@ -149,6 +150,7 @@ export async function explainDecisionWithQwen(result, env = process.env) {
       text
     };
   } catch (error) {
+    logQwenError("explainDecision", error, env);
     return {
       source: "deterministic-fallback-after-qwen-error",
       text: explainDecision(result),
@@ -210,6 +212,7 @@ function applyPolicyOverrides(base, overrides) {
     security: {
       ...base.security,
       ...objectOrEmpty(overrides.security),
+      // Fund movement must be opted into outside the LLM path.
       allowTransfers: false
     },
     allowedSymbols: Array.isArray(overrides.allowedSymbols)
@@ -236,4 +239,11 @@ function timeoutMsFromEnv(value, fallback) {
 
 function publicQwenError() {
   return PUBLIC_QWEN_ERROR;
+}
+
+function logQwenError(context, error, env) {
+  if (env.SENTINEL_SUPPRESS_QWEN_LOGS === "1") {
+    return;
+  }
+  console.error(`[sentinel:qwen] ${context} failed: ${error?.message ?? String(error)}`);
 }
