@@ -16,9 +16,11 @@ https://sentinel-flight-recorder.vercel.app
 
 ### 1. Idea
 
-Autonomous trading agents can call exchange tools faster than a human can inspect them, but the model that proposes a trade should not also be the final authority that approves it. Sentinel Flight Recorder is an MCP-native control plane placed between an agent and Bitget Agent Hub. It converts supported execution calls into normalized intents, evaluates them with deterministic policy, then allows, repairs, or blocks them before forwarding.
+**Pain point.** Autonomous trading agents call exchange tools faster than any human can inspect them, and most teams have no paper trail to figure out which call went wrong, why, or whether the model was acting on a hallucinated assumption. The agent that proposes the trade also ends up authorizing it — wrong separation of duties for anything touching money.
 
-The policy covers per-trade risk, leverage, required stop loss, allowed symbols, price deviation, slippage, duplicate calls, total exposure, daily loss, consecutive losses, transfers, and withdrawals. Qwen translates natural-language mandates into policy overrides and explains decisions. It cannot enable transfers and it never performs final authorization. Every decision receives content-addressed hashes and the benchmark receipts are committed under one reproducible Merkle root.
+**What Sentinel does.** Sentinel Flight Recorder is an MCP-native control plane that drops between any MCP-speaking agent and a Bitget Agent Hub-compatible upstream. It normalizes supported execution calls into intents, runs them through a deterministic policy engine, and allows / repairs / blocks them before they reach the exchange. Every decision emits a content-addressed receipt; bench runs commit under a single reproducible Merkle root.
+
+The policy covers per-trade risk, leverage, required stop loss, allowed symbols, price deviation, slippage, duplicate calls, exposure, daily loss, consecutive losses, transfers, and withdrawals. Qwen compiles natural-language mandates into policy overrides and explains decisions in plain language — but it never authorizes execution. Final approval is deterministic JavaScript that Qwen cannot override, including the hard block on fund movement.
 
 ### 2. Progress
 
@@ -41,7 +43,9 @@ Current limitations and next steps:
 - stale-data and price-deviation checks require market context supplied with the guarded call
 - next work is trusted market-data enrichment, additional write-tool adapters, and persistent receipt storage
 
-Stack and APIs: Node.js 20+ ESM, MCP JSON-RPC over stdio, Bitget Agent Hub / `bitget-mcp-server`, Alibaba Qwen `qwen3.6-plus`, Vercel Functions, GitHub Actions, and vanilla HTML/CSS/JavaScript.
+**Bitget tools used:** Agent Hub (target tool catalog and tool-shape adapter), MCP Server (`bitget-mcp-server` as the upstream Sentinel proxies in front of), Bitget Qwen proxy (`qwen3.6-plus` via `hackathon.bitgetops.com`).
+
+**Other stack:** Node.js 20+ ESM, MCP JSON-RPC over stdio, Vercel Functions, GitHub Actions, viem (BSC testnet anchor), and vanilla HTML/CSS/JavaScript.
 
 ### 3. Materials
 
